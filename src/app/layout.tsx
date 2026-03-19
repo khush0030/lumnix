@@ -8,8 +8,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ backgroundColor: '#09090b' }}>
-      <body style={{ backgroundColor: '#09090b', color: '#f4f4f5', margin: 0 }}>{children}</body>
+    <html lang="en" style={{ backgroundColor: '#0F172A' }}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Sans:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body style={{ backgroundColor: '#0F172A', color: '#F8FAFC', margin: 0 }}>{children}</body>
     </html>
   );
 }

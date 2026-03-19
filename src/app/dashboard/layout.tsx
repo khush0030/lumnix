@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Zap, LayoutDashboard, Search, BarChart3, DollarSign,
+  LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
   Menu, X, LogOut, ChevronRight, ChevronDown, Plus
 } from 'lucide-react';
@@ -15,7 +15,7 @@ const navItems = [
   { href: '/dashboard/google-ads', label: 'Google Ads', icon: DollarSign },
   { href: '/dashboard/meta-ads', label: 'Meta Ads', icon: Target },
   { href: '/dashboard/ai', label: 'AI Assistant', icon: Brain },
-  { href: '/dashboard/competitors', label: 'Competitor Spy', icon: Eye },
+  { href: '/dashboard/competitors', label: 'Competitor Spy', icon: Eye, accent: '#BE123C' },
   { href: '/dashboard/reports', label: 'Reports', icon: FileText },
   { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
@@ -23,7 +23,7 @@ const navItems = [
 
 function WorkspaceSwitcher({ workspace, accent }: { workspace: any; accent: string }) {
   const [open, setOpen] = useState(false);
-  const initials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : 'KR';
+  const initials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : 'LX';
 
   return (
     <div style={{ position: 'relative', marginBottom: '20px' }}>
@@ -31,47 +31,46 @@ function WorkspaceSwitcher({ workspace, accent }: { workspace: any; accent: stri
         onClick={() => setOpen(!open)}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '10px 12px', borderRadius: '10px', border: '1px solid #27272a',
-          backgroundColor: '#1a1a1d', cursor: 'pointer', textAlign: 'left',
+          padding: '10px 12px', borderRadius: '10px', border: '1px solid #334155',
+          backgroundColor: '#1E293B', cursor: 'pointer', textAlign: 'left',
         }}
       >
-        {/* Logo or initials */}
         {workspace?.logo_url ? (
           <img src={workspace.logo_url} alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
         ) : (
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `linear-gradient(135deg, ${accent}, #4f46e5)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: 'white', flexShrink: 0 }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: 'white', flexShrink: 0, fontFamily: 'var(--font-display)' }}>
             {initials}
           </div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '13px', fontWeight: 600, color: '#f4f4f5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#F8FAFC', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', fontFamily: 'var(--font-body)' }}>
             {workspace?.name || 'My Workspace'}
           </div>
-          <div style={{ fontSize: '11px', color: '#52525b' }}>Workspace</div>
+          <div style={{ fontSize: '11px', color: '#64748B', fontFamily: 'var(--font-body)' }}>Workspace</div>
         </div>
-        <ChevronDown size={14} color="#52525b" style={{ flexShrink: 0 }} />
+        <ChevronDown size={14} color="#64748B" style={{ flexShrink: 0 }} />
       </button>
 
       {open && (
-        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', backgroundColor: '#1a1a1d', border: '1px solid #27272a', borderRadius: '10px', overflow: 'hidden', zIndex: 100 }}>
-          <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e1e22' }}>
-            <div style={{ fontSize: '11px', color: '#52525b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Workspaces</div>
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '10px', overflow: 'hidden', zIndex: 100 }}>
+          <div style={{ padding: '8px 12px', borderBottom: '1px solid #334155' }}>
+            <div style={{ fontSize: '11px', color: '#64748B', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'var(--font-body)' }}>Workspaces</div>
           </div>
           <div style={{ padding: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             {workspace?.logo_url ? (
               <img src={workspace.logo_url} alt="Logo" style={{ width: '24px', height: '24px', borderRadius: '6px', objectFit: 'cover' }} />
             ) : (
-              <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: `linear-gradient(135deg, ${accent}, #4f46e5)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'white' }}>
+              <div style={{ width: '24px', height: '24px', borderRadius: '6px', backgroundColor: accent, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'white', fontFamily: 'var(--font-display)' }}>
                 {initials}
               </div>
             )}
-            <span style={{ fontSize: '13px', color: '#f4f4f5', flex: 1 }}>{workspace?.name || 'My Workspace'}</span>
+            <span style={{ fontSize: '13px', color: '#F8FAFC', flex: 1, fontFamily: 'var(--font-body)' }}>{workspace?.name || 'My Workspace'}</span>
             <Check size={12} color={accent} />
           </div>
-          <div style={{ borderTop: '1px solid #1e1e22', padding: '6px' }}>
+          <div style={{ borderTop: '1px solid #334155', padding: '6px' }}>
             <button
               onClick={() => setOpen(false)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 6px', borderRadius: '6px', border: 'none', backgroundColor: 'transparent', color: '#71717a', fontSize: '13px', cursor: 'pointer' }}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 6px', borderRadius: '6px', border: 'none', backgroundColor: 'transparent', color: '#64748B', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-body)' }}
             >
               <Plus size={14} /> Add Brand
             </button>
@@ -95,9 +94,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { workspace } = useWorkspace();
-  const accent = workspace?.brand_color || '#7c3aed';
+  const accent = workspace?.brand_color || '#7C3AED';
 
-  // Inject CSS variable for accent color
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accent);
   }, [accent]);
@@ -109,17 +107,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const sidebar = (
     <div style={{
-      width: '260px', minHeight: '100vh', backgroundColor: '#111113',
-      borderRight: '1px solid #1e1e22', display: 'flex', flexDirection: 'column',
+      width: '260px', minHeight: '100vh', backgroundColor: '#0F172A',
+      borderRight: '1px solid #1E293B', display: 'flex', flexDirection: 'column',
       padding: '16px 12px', flexShrink: 0
     }}>
-      {/* Lumnix Logo */}
+      {/* Lumnix Wordmark */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', marginBottom: '16px' }}>
-        <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Zap size={18} color="white" />
-        </div>
-        <span style={{ fontSize: '18px', fontWeight: 800, color: '#f4f4f5', letterSpacing: '-0.3px' }}>Lumnix</span>
-        <span style={{ fontSize: '10px', color: '#7c3aed', fontWeight: 600, backgroundColor: 'rgba(124,58,237,0.15)', padding: '2px 6px', borderRadius: '4px', marginLeft: 'auto' }}>BETA</span>
+        <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)', lineHeight: 1 }}>
+          <span style={{ color: '#7C3AED' }}>L</span><span style={{ color: '#F8FAFC' }}>umnix</span>
+        </span>
+        <span style={{ fontSize: '10px', color: '#7C3AED', fontWeight: 600, backgroundColor: 'rgba(124,58,237,0.15)', padding: '2px 6px', borderRadius: '4px', marginLeft: 'auto', fontFamily: 'var(--font-body)' }}>BETA</span>
       </div>
 
       {/* Workspace Switcher */}
@@ -129,6 +126,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
         {navItems.map((item) => {
           const active = isActive(item.href);
+          const itemAccent = item.accent || accent;
           return (
             <a
               key={item.href}
@@ -137,16 +135,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
                 padding: '10px 12px', borderRadius: '8px',
-                backgroundColor: active ? `${accent}1a` : 'transparent',
-                color: active ? accent : '#71717a',
+                backgroundColor: active ? 'rgba(124,58,237,0.12)' : 'transparent',
+                color: active ? '#A78BFA' : '#64748B',
                 fontSize: '14px', fontWeight: active ? 600 : 400,
+                fontFamily: 'var(--font-body)',
                 textDecoration: 'none', cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                borderLeft: active ? `3px solid ${accent}` : '3px solid transparent',
+                borderLeft: active ? '2px solid #7C3AED' : '2px solid transparent',
+              }}
+              onMouseEnter={e => {
+                if (!active) {
+                  (e.currentTarget as HTMLAnchorElement).style.color = '#94A3B8';
+                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = '#1E293B';
+                }
+              }}
+              onMouseLeave={e => {
+                if (!active) {
+                  (e.currentTarget as HTMLAnchorElement).style.color = '#64748B';
+                  (e.currentTarget as HTMLAnchorElement).style.backgroundColor = 'transparent';
+                }
               }}
             >
-              <item.icon size={18} />
-              {item.label}
+              <item.icon size={18} color={active ? '#A78BFA' : (item.accent ? itemAccent : undefined)} />
+              <span style={{ color: item.accent && !active ? itemAccent : undefined }}>{item.label}</span>
               {active && <ChevronRight size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />}
             </a>
           );
@@ -154,16 +165,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </nav>
 
       {/* Footer */}
-      <div style={{ borderTop: '1px solid #1e1e22', paddingTop: '12px', marginTop: '12px' }}>
+      <div style={{ borderTop: '1px solid #1E293B', paddingTop: '12px', marginTop: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#27272a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 600, color: accent }}>
-            K
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#1E293B', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 700, color: accent, fontFamily: 'var(--font-display)', border: '1px solid #334155' }}>
+            {workspace?.name ? workspace.name[0].toUpperCase() : 'L'}
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '13px', fontWeight: 500, color: '#d4d4d8' }}>Account</div>
-            <div style={{ fontSize: '11px', color: '#52525b' }}>{workspace?.name || 'Lumnix'}</div>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: '#94A3B8', fontFamily: 'var(--font-body)' }}>Account</div>
+            <div style={{ fontSize: '11px', color: '#64748B', fontFamily: 'var(--font-body)' }}>{workspace?.name || 'Lumnix'}</div>
           </div>
-          <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: '4px' }}>
+          <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', padding: '4px' }}>
             <LogOut size={16} />
           </button>
         </div>
@@ -172,21 +183,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   );
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#09090b' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0F172A' }}>
       {/* Desktop Sidebar */}
       <div style={{ display: 'none' }} className="desktop-sidebar">{sidebar}</div>
       <style>{`.desktop-sidebar { display: flex !important; } @media (max-width: 768px) { .desktop-sidebar { display: none !important; } }`}</style>
 
       {/* Mobile Header */}
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: '#111113', borderBottom: '1px solid #1e1e22', padding: '12px 16px', display: 'none' }} className="mobile-header">
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: '#0F172A', borderBottom: '1px solid #1E293B', padding: '12px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Zap size={14} color="white" />
-            </div>
-            <span style={{ fontSize: '16px', fontWeight: 700, color: '#f4f4f5' }}>{workspace?.name || 'Lumnix'}</span>
-          </div>
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#d4d4d8', cursor: 'pointer' }}>
+          <span style={{ fontSize: '20px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
+            <span style={{ color: '#7C3AED' }}>L</span><span style={{ color: '#F8FAFC' }}>umnix</span>
+          </span>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer' }}>
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>

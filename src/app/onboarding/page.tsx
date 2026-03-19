@@ -1,11 +1,11 @@
 'use client';
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Zap, Upload, Check, Search, BarChart3, Target, Share2, ChevronRight, Loader2 } from 'lucide-react';
+import { Upload, Check, Search, BarChart3, Target, Share2, ChevronRight, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 const BRAND_COLORS = [
-  { label: 'Purple', value: '#7c3aed' },
+  { label: 'Purple', value: '#7C3AED' },
   { label: 'Blue', value: '#3b82f6' },
   { label: 'Green', value: '#22c55e' },
   { label: 'Orange', value: '#f59e0b' },
@@ -24,7 +24,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [brandName, setBrandName] = useState('');
-  const [brandColor, setBrandColor] = useState('#7c3aed');
+  const [brandColor, setBrandColor] = useState('#7C3AED');
   const [logoUrl, setLogoUrl] = useState('');
   const [logoPreview, setLogoPreview] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -80,7 +80,6 @@ export default function OnboardingPage() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      // Get workspace id
       const wRes = await fetch('/api/workspace', { headers: { Authorization: `Bearer ${session.access_token}` } });
       const { workspace } = await wRes.json();
       if (!workspace?.id) return;
@@ -100,19 +99,20 @@ export default function OnboardingPage() {
   const stepStyle = (n: number) => ({
     width: '32px', height: '32px', borderRadius: '50%',
     display: 'flex', alignItems: 'center' as const, justifyContent: 'center',
-    fontSize: '14px', fontWeight: 600,
-    backgroundColor: step > n ? '#22c55e' : step === n ? '#7c3aed' : '#27272a',
-    color: step >= n ? 'white' : '#71717a',
+    fontSize: '14px', fontWeight: 700,
+    fontFamily: 'var(--font-display)',
+    backgroundColor: step > n ? '#10B981' : step === n ? '#7C3AED' : '#1E293B',
+    color: step >= n ? 'white' : '#64748B',
+    border: step > n ? 'none' : step === n ? 'none' : '1px solid #334155',
   });
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#09090b', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'var(--font-body)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '40px' }}>
-        <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Zap size={20} color="white" />
-        </div>
-        <span style={{ fontSize: '22px', fontWeight: 800, color: '#f4f4f5' }}>Lumnix</span>
+      <div style={{ marginBottom: '40px' }}>
+        <span style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
+          <span style={{ color: '#7C3AED' }}>L</span><span style={{ color: '#F8FAFC' }}>umnix</span>
+        </span>
       </div>
 
       {/* Steps indicator */}
@@ -122,49 +122,49 @@ export default function OnboardingPage() {
             <div style={stepStyle(n)}>
               {step > n ? <Check size={16} /> : n}
             </div>
-            {i < 2 && <div style={{ width: '48px', height: '2px', backgroundColor: step > n ? '#22c55e' : '#27272a' }} />}
+            {i < 2 && <div style={{ width: '48px', height: '2px', backgroundColor: step > n ? '#10B981' : '#334155' }} />}
           </div>
         ))}
       </div>
 
       {/* Card */}
-      <div style={{ width: '100%', maxWidth: '520px', backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '20px', padding: '36px' }}>
+      <div style={{ width: '100%', maxWidth: '520px', backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '20px', padding: '36px' }}>
 
         {/* Step 1: Brand Setup */}
         {step === 1 && (
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#f4f4f5', marginBottom: '6px' }}>Set up your brand</h1>
-            <p style={{ fontSize: '14px', color: '#71717a', marginBottom: '28px' }}>This personalizes your Lumnix dashboard</p>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#F8FAFC', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Set up your brand</h1>
+            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '28px' }}>This personalizes your Lumnix dashboard</p>
 
             {/* Brand Name */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px' }}>Brand Name</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginBottom: '8px' }}>Brand Name</label>
               <input
                 type="text"
                 placeholder="e.g. Acme Corp"
                 value={brandName}
                 onChange={e => setBrandName(e.target.value)}
-                style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid #3f3f46', backgroundColor: '#27272a', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: '#0F172A', color: '#F8FAFC', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)' }}
               />
             </div>
 
             {/* Logo Upload */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px' }}>Logo (optional)</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginBottom: '8px' }}>Logo (optional)</label>
               <div
                 onClick={() => fileRef.current?.click()}
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: '10px', border: '2px dashed #3f3f46', cursor: 'pointer', backgroundColor: '#111113' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: '8px', border: '2px dashed #334155', cursor: 'pointer', backgroundColor: '#0F172A' }}
               >
                 {logoPreview ? (
                   <img src={logoPreview} alt="Logo preview" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#27272a', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {uploading ? <Loader2 size={20} color="#71717a" style={{ animation: 'spin 1s linear infinite' }} /> : <Upload size={20} color="#71717a" />}
+                  <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#1E293B', border: '1px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {uploading ? <Loader2 size={20} color="#64748B" style={{ animation: 'spin 1s linear infinite' }} /> : <Upload size={20} color="#64748B" />}
                   </div>
                 )}
                 <div>
-                  <div style={{ fontSize: '14px', color: '#d4d4d8', fontWeight: 500 }}>{uploading ? 'Uploading...' : logoPreview ? 'Logo uploaded' : 'Click to upload logo'}</div>
-                  <div style={{ fontSize: '12px', color: '#52525b', marginTop: '2px' }}>PNG, JPG up to 2MB</div>
+                  <div style={{ fontSize: '14px', color: '#94A3B8', fontWeight: 500 }}>{uploading ? 'Uploading...' : logoPreview ? 'Logo uploaded' : 'Click to upload logo'}</div>
+                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>PNG, JPG up to 2MB</div>
                 </div>
               </div>
               <input
@@ -178,7 +178,7 @@ export default function OnboardingPage() {
 
             {/* Brand Color */}
             <div style={{ marginBottom: '28px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#a1a1aa', marginBottom: '10px' }}>Brand Color</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginBottom: '10px' }}>Brand Color</label>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {BRAND_COLORS.map(c => (
                   <button
@@ -209,7 +209,7 @@ export default function OnboardingPage() {
             <button
               onClick={handleStep1Submit}
               disabled={saving}
-              style={{ width: '100%', padding: '12px', borderRadius: '10px', border: 'none', background: `linear-gradient(135deg, ${brandColor}, #4f46e5)`, color: 'white', fontSize: '14px', fontWeight: 600, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: 'white', fontSize: '14px', fontWeight: 600, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-body)' }}
             >
               {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : null}
               {saving ? 'Saving...' : 'Continue'}
@@ -221,25 +221,25 @@ export default function OnboardingPage() {
         {/* Step 2: Connect Integrations */}
         {step === 2 && (
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#f4f4f5', marginBottom: '6px' }}>Connect your data</h1>
-            <p style={{ fontSize: '14px', color: '#71717a', marginBottom: '28px' }}>Connect your marketing accounts to start seeing real data. You can always do this later in Settings.</p>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#F8FAFC', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Connect your data</h1>
+            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '28px' }}>Connect your marketing accounts to start seeing real data. You can always do this later in Settings.</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
               {INTEGRATIONS.map(int => {
                 const Icon = int.icon;
                 return (
-                  <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: '12px', border: '1px solid #27272a', backgroundColor: '#111113' }}>
+                  <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: '12px', border: '1px solid #334155', backgroundColor: '#0F172A' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: `${int.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon size={20} color={int.color} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#f4f4f5' }}>{int.name}</div>
-                      <div style={{ fontSize: '12px', color: '#71717a', marginTop: '2px' }}>{int.desc}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#F8FAFC' }}>{int.name}</div>
+                      <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{int.desc}</div>
                     </div>
                     <button
                       onClick={() => handleConnect(int.id)}
                       disabled={connecting === int.id}
-                      style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}
+                      style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, fontFamily: 'var(--font-body)' }}
                     >
                       {connecting === int.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : null}
                       Connect
@@ -251,7 +251,7 @@ export default function OnboardingPage() {
 
             <button
               onClick={() => setStep(3)}
-              style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid #3f3f46', backgroundColor: 'transparent', color: '#d4d4d8', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: 'transparent', color: '#94A3B8', fontSize: '14px', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}
             >
               Skip for now
             </button>
@@ -261,16 +261,16 @@ export default function OnboardingPage() {
         {/* Step 3: Done */}
         {step === 3 && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'rgba(34,197,94,0.15)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
-              <Check size={36} color="#22c55e" />
+            <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'rgba(16,185,129,0.15)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+              <Check size={36} color="#10B981" />
             </div>
-            <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#f4f4f5', marginBottom: '8px' }}>You&apos;re all set!</h1>
-            <p style={{ fontSize: '14px', color: '#71717a', marginBottom: '32px', lineHeight: 1.6 }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#F8FAFC', marginBottom: '8px', fontFamily: 'var(--font-display)' }}>You&apos;re all set!</h1>
+            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '32px', lineHeight: 1.6 }}>
               Your workspace is ready. Head to your dashboard to explore your marketing data and AI insights.
             </p>
             <button
               onClick={() => router.push('/dashboard')}
-              style={{ width: '100%', padding: '13px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+              style={{ width: '100%', padding: '13px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: 'white', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-body)' }}
             >
               Go to Dashboard <ChevronRight size={18} />
             </button>
@@ -279,7 +279,7 @@ export default function OnboardingPage() {
       </div>
 
       {step < 3 && (
-        <p style={{ marginTop: '20px', fontSize: '13px', color: '#52525b' }}>
+        <p style={{ marginTop: '20px', fontSize: '13px', color: '#64748B' }}>
           Step {step} of 3
         </p>
       )}

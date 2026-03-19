@@ -109,13 +109,13 @@ export async function POST(req: NextRequest) {
     const context = workspace_id ? await fetchWorkspaceContext(workspace_id) : null;
 
     const systemPrompt = context
-      ? `You are Krato AI, a marketing intelligence assistant for ${context.workspaceName}. You have access to their real marketing data from the last 30 days.
+      ? `You are Lumnix AI, a marketing intelligence assistant for ${context.workspaceName}. You have access to their real marketing data from the last 30 days.
 
 Here is their current data context:
 ${JSON.stringify(context, null, 2)}
 
 Answer questions about their marketing performance, suggest improvements, explain trends, and provide actionable recommendations. Be concise and data-driven. Always reference specific numbers from their data when available. If data for a specific metric is missing or empty (hasData: false), mention they need to connect that integration.`
-      : `You are Krato AI, a marketing intelligence assistant. Help users analyze their marketing data, identify trends, and make strategic decisions. Be concise and actionable.`;
+      : `You are Lumnix AI, a marketing intelligence assistant. Help users analyze their marketing data, identify trends, and make strategic decisions. Be concise and actionable.`;
 
     const stream = anthropic.messages.stream({
       model: 'claude-3-5-haiku-20241022',

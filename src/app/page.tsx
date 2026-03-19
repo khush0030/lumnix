@@ -13,7 +13,7 @@ export default function LandingPage() {
           <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Zap size={20} color="white" />
           </div>
-          <span style={{ fontSize: '22px', fontWeight: 800, color: '#f4f4f5', letterSpacing: '-0.5px' }}>Krato</span>
+          <span style={{ fontSize: '22px', fontWeight: 800, color: '#f4f4f5', letterSpacing: '-0.5px' }}>Lumnix</span>
         </div>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => router.push('/auth/signin')} style={{ padding: '10px 20px', borderRadius: '8px', border: '1px solid #3f3f46', backgroundColor: 'transparent', color: '#d4d4d8', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
@@ -65,7 +65,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <div style={{ textAlign: 'center', padding: '20px', borderTop: '1px solid #1a1a1f' }}>
-        <span style={{ fontSize: '12px', color: '#52525b' }}>© 2026 Krato by Oltaflock AI. All rights reserved.</span>
+        <span style={{ fontSize: '12px', color: '#52525b' }}>© 2026 Lumnix by Oltaflock AI. All rights reserved.</span>
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ function exportPagesCSV(pages: { page: string; pageviews: number; bounceRate: nu
   const blob = new Blob([csv], { type: 'text/csv' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'krato-pages.csv'; a.click();
+  a.href = url; a.download = 'Lumnix-pages.csv'; a.click();
   URL.revokeObjectURL(url);
 }
 

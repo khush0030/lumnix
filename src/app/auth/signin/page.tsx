@@ -39,7 +39,7 @@ export default function SignInPage() {
             <Zap size={24} color="white" />
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#f4f4f5' }}>Welcome back</h1>
-          <p style={{ fontSize: '14px', color: '#71717a', marginTop: '4px' }}>Sign in to your Krato account</p>
+          <p style={{ fontSize: '14px', color: '#71717a', marginTop: '4px' }}>Sign in to your Lumnix account</p>
         </div>
 
         {/* Card */}

@@ -112,7 +112,7 @@ export default function OnboardingPage() {
         <div style={{ width: '36px', height: '36px', borderRadius: '10px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Zap size={20} color="white" />
         </div>
-        <span style={{ fontSize: '22px', fontWeight: 800, color: '#f4f4f5' }}>Krato</span>
+        <span style={{ fontSize: '22px', fontWeight: 800, color: '#f4f4f5' }}>Lumnix</span>
       </div>
 
       {/* Steps indicator */}
@@ -134,7 +134,7 @@ export default function OnboardingPage() {
         {step === 1 && (
           <div>
             <h1 style={{ fontSize: '22px', fontWeight: 700, color: '#f4f4f5', marginBottom: '6px' }}>Set up your brand</h1>
-            <p style={{ fontSize: '14px', color: '#71717a', marginBottom: '28px' }}>This personalizes your Krato dashboard</p>
+            <p style={{ fontSize: '14px', color: '#71717a', marginBottom: '28px' }}>This personalizes your Lumnix dashboard</p>
 
             {/* Brand Name */}
             <div style={{ marginBottom: '20px' }}>

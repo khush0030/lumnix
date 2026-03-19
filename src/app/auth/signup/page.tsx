@@ -48,7 +48,7 @@ export default function SignUpPage() {
             <Zap size={24} color="white" />
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 700, color: '#f4f4f5' }}>Create your account</h1>
-          <p style={{ fontSize: '14px', color: '#71717a', marginTop: '4px' }}>Start with Krato for free</p>
+          <p style={{ fontSize: '14px', color: '#71717a', marginTop: '4px' }}>Start with Lumnix for free</p>
         </div>
 
         <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '16px', padding: '28px' }}>

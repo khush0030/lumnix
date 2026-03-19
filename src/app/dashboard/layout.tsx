@@ -113,12 +113,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       borderRight: '1px solid #1e1e22', display: 'flex', flexDirection: 'column',
       padding: '16px 12px', flexShrink: 0
     }}>
-      {/* Krato Logo */}
+      {/* Lumnix Logo */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', marginBottom: '16px' }}>
         <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Zap size={18} color="white" />
         </div>
-        <span style={{ fontSize: '18px', fontWeight: 800, color: '#f4f4f5', letterSpacing: '-0.3px' }}>Krato</span>
+        <span style={{ fontSize: '18px', fontWeight: 800, color: '#f4f4f5', letterSpacing: '-0.3px' }}>Lumnix</span>
         <span style={{ fontSize: '10px', color: '#7c3aed', fontWeight: 600, backgroundColor: 'rgba(124,58,237,0.15)', padding: '2px 6px', borderRadius: '4px', marginLeft: 'auto' }}>BETA</span>
       </div>
 
@@ -161,7 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: '13px', fontWeight: 500, color: '#d4d4d8' }}>Account</div>
-            <div style={{ fontSize: '11px', color: '#52525b' }}>{workspace?.name || 'Krato'}</div>
+            <div style={{ fontSize: '11px', color: '#52525b' }}>{workspace?.name || 'Lumnix'}</div>
           </div>
           <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: '4px' }}>
             <LogOut size={16} />
@@ -184,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={14} color="white" />
             </div>
-            <span style={{ fontSize: '16px', fontWeight: 700, color: '#f4f4f5' }}>{workspace?.name || 'Krato'}</span>
+            <span style={{ fontSize: '16px', fontWeight: 700, color: '#f4f4f5' }}>{workspace?.name || 'Lumnix'}</span>
           </div>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#d4d4d8', cursor: 'pointer' }}>
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}

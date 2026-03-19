@@ -104,7 +104,7 @@ export default function AIPage() {
               <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
                 <Brain size={28} color="#a78bfa" />
               </div>
-              <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#f4f4f5', marginBottom: '8px' }}>Ask Krato AI</h3>
+              <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#f4f4f5', marginBottom: '8px' }}>Ask Lumnix AI</h3>
               <p style={{ fontSize: '14px', color: '#71717a', maxWidth: '420px', lineHeight: 1.6, marginBottom: '32px' }}>
                 Your data-aware marketing assistant. Ask me about traffic trends, keyword opportunities, competitor activity, and more.
               </p>
@@ -161,7 +161,7 @@ export default function AIPage() {
                     <Brain size={14} color="#a78bfa" />
                   </div>
                   <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: '#27272a', color: '#71717a', fontSize: '13px' }}>
-                    Krato AI is thinking...
+                    Lumnix AI is thinking...
                   </div>
                 </div>
               )}
@@ -209,7 +209,7 @@ export default function AIPage() {
             </button>
           </div>
           <p style={{ fontSize: '11px', color: '#52525b', marginTop: '8px', textAlign: 'center' }}>
-            Powered by Claude · Krato AI has access to your connected marketing data
+            Powered by Claude · Lumnix AI has access to your connected marketing data
           </p>
         </div>
       </div>

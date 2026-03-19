@@ -1,6 +1,40 @@
 -- KRATO — Full Database Migration
 -- Run this in Supabase SQL Editor after creating the project
 
+-- ============================================================
+-- NEW ADDITIONS (run these if you already ran the migration):
+-- ============================================================
+-- ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS logo_url TEXT;
+-- ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS brand_color TEXT DEFAULT '#7c3aed';
+-- ALTER TABLE public.workspaces ADD COLUMN IF NOT EXISTS slug TEXT UNIQUE;
+--
+-- CREATE TABLE IF NOT EXISTS public.ga4_data (
+--   id uuid default gen_random_uuid() PRIMARY KEY,
+--   workspace_id uuid REFERENCES public.workspaces(id) ON DELETE CASCADE,
+--   date date,
+--   metric_type text,
+--   dimension_name text,
+--   dimension_value text,
+--   value numeric,
+--   created_at timestamptz default now()
+-- );
+-- CREATE TABLE IF NOT EXISTS public.gsc_data (
+--   id uuid default gen_random_uuid() PRIMARY KEY,
+--   workspace_id uuid REFERENCES public.workspaces(id) ON DELETE CASCADE,
+--   date date,
+--   query text,
+--   page text,
+--   clicks int,
+--   impressions int,
+--   ctr numeric,
+--   position numeric,
+--   created_at timestamptz default now()
+-- );
+--
+-- Storage bucket for brand assets (run in Supabase Dashboard > Storage):
+-- Create a public bucket named: brand-assets
+-- ============================================================
+
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Workspaces (multi-tenant)
@@ -8,6 +42,9 @@ CREATE TABLE IF NOT EXISTS public.workspaces (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   plan TEXT DEFAULT 'trial' CHECK (plan IN ('trial','starter','pro','enterprise')),
+  logo_url TEXT,
+  brand_color TEXT DEFAULT '#7c3aed',
+  slug TEXT UNIQUE,
   created_by UUID REFERENCES auth.users(id),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

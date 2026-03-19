@@ -31,3 +31,86 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #09090b; }
 ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
+
+/* ── Responsive Grid Helpers ── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.kpi-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.two-col-equal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.three-col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 768px) {
+  /* Main content padding on mobile */
+  .main-content {
+    padding: 16px !important;
+    padding-top: 72px !important;
+    overflow-x: hidden !important;
+  }
+
+  /* All grids collapse to single column */
+  .kpi-grid,
+  .kpi-grid-3,
+  .two-col,
+  .two-col-equal,
+  .three-col {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* Force single col on very small screens */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Charts and wide panels go full width */
+  .two-col > *,
+  .two-col-equal > * {
+    min-width: 0;
+  }
+
+  /* Tables: allow horizontal scroll */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide sidebar on mobile (already handled) */
+  .desktop-sidebar { display: none !important; }
+  .mobile-header { display: block !important; }
+}
+
+@media (max-width: 480px) {
+  .kpi-grid,
+  .kpi-grid-3,
+  .two-col,
+  .two-col-equal,
+  .three-col {
+    grid-template-columns: 1fr !important;
+  }
+}

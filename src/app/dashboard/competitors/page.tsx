@@ -25,7 +25,7 @@ export default function CompetitorsPage() {
       </div>
 
       {/* Competitor List */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '24px' }}>
+      <div className="three-col">
         {mockCompetitors.map(c => (
           <div key={c.name} style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '20px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>

@@ -41,7 +41,7 @@ export default function SEOPage() {
       </div>
 
       {/* KPI Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+      <div className="kpi-grid">
         {[
           { label: 'Total Clicks', value: '3,340', change: '+14.2%', up: true },
           { label: 'Impressions', value: '78,800', change: '+8.7%', up: true },
@@ -58,7 +58,7 @@ export default function SEOPage() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '16px', marginBottom: '24px' }}>
+      <div className="two-col">
         {/* Keyword Table */}
         <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>

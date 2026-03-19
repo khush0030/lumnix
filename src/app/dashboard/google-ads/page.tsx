@@ -27,7 +27,7 @@ export default function GoogleAdsPage() {
         <DateRangePicker value={days} onChange={setDays} />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+      <div className="kpi-grid">
         {[
           { label: 'Total Spend', value: '$6,440', change: '-5.2%', up: false, color: '#f59e0b' },
           { label: 'Conversions', value: '126', change: '+18.4%', up: true, color: '#22c55e' },
@@ -44,7 +44,7 @@ export default function GoogleAdsPage() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '16px', marginBottom: '24px' }}>
+      <div className="two-col">
         {/* Campaigns */}
         <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Campaigns</h2>

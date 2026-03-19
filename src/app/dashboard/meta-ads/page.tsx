@@ -19,7 +19,7 @@ const spendTrend = Array.from({ length: 14 }, (_, i) => ({
 export default function MetaAdsPage() {
   return (
     <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+      <div className="kpi-grid">
         {[
           { label: 'Total Spend', value: '$5,560', change: '+8.3%', icon: DollarSign, color: '#f59e0b' },
           { label: 'Reach', value: '140.4K', change: '+12.1%', icon: Eye, color: '#3b82f6' },
@@ -39,7 +39,7 @@ export default function MetaAdsPage() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '16px', marginBottom: '24px' }}>
+      <div className="two-col">
         {/* Ad Sets Table */}
         <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Ad Sets</h2>

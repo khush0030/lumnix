@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px', marginBottom: '24px' }}>
+      <div className="kpi-grid">
         {[
           { label: 'Sessions', value: '11,300', change: '+9.2%', icon: BarChart3, color: '#7c3aed' },
           { label: 'Users', value: '8,740', change: '+6.8%', icon: Users, color: '#3b82f6' },
@@ -69,7 +69,7 @@ export default function AnalyticsPage() {
         ))}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '24px' }}>
+      <div className="two-col-equal">
         {/* Sessions Chart */}
         <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
           <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Sessions & Users</h2>

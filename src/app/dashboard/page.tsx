@@ -1,6 +1,7 @@
 'use client';
 import { BarChart3, DollarSign, TrendingUp, Target, ArrowUpRight, ArrowDownRight, Zap, Brain, Link2, AlertCircle } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip, PieChart, Pie, Cell } from 'recharts';
+import { useWorkspace } from '@/lib/hooks';
 
 const kpis = [
   { label: 'Total Traffic', value: '124,832', change: '+12.4%', up: true, icon: BarChart3, color: '#7c3aed', bg: 'rgba(124,58,237,0.1)' },
@@ -30,12 +31,13 @@ const recentAlerts = [
 ];
 
 export default function DashboardPage() {
+  const { workspace } = useWorkspace();
   return (
     <div>
       {/* Header */}
       <div style={{ marginBottom: '28px' }}>
-        <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#f4f4f5', letterSpacing: '-0.5px' }}>Dashboard</h1>
-        <p style={{ color: '#71717a', fontSize: '14px', marginTop: '4px' }}>Your marketing performance at a glance</p>
+        <h1 style={{ fontSize: '26px', fontWeight: 700, color: '#f4f4f5', letterSpacing: '-0.5px' }}>Welcome back</h1>
+        <p style={{ color: '#71717a', fontSize: '14px', marginTop: '4px' }}>{workspace?.name ? `${workspace.name} performance at a glance` : 'Your marketing performance at a glance'}</p>
       </div>
 
       {/* KPI Cards */}

@@ -1,11 +1,12 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   Zap, LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
-  Menu, X, LogOut, ChevronRight
+  Menu, X, LogOut, ChevronRight, ChevronDown, Plus
 } from 'lucide-react';
+import { useWorkspace } from '@/lib/hooks';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -20,10 +21,86 @@ const navItems = [
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },
 ];
 
+function WorkspaceSwitcher({ workspace, accent }: { workspace: any; accent: string }) {
+  const [open, setOpen] = useState(false);
+  const initials = workspace?.name ? workspace.name.substring(0, 2).toUpperCase() : 'KR';
+
+  return (
+    <div style={{ position: 'relative', marginBottom: '20px' }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: '100%', display: 'flex', alignItems: 'center', gap: '10px',
+          padding: '10px 12px', borderRadius: '10px', border: '1px solid #27272a',
+          backgroundColor: '#1a1a1d', cursor: 'pointer', textAlign: 'left',
+        }}
+      >
+        {/* Logo or initials */}
+        {workspace?.logo_url ? (
+          <img src={workspace.logo_url} alt="Logo" style={{ width: '32px', height: '32px', borderRadius: '8px', objectFit: 'cover', flexShrink: 0 }} />
+        ) : (
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: `linear-gradient(135deg, ${accent}, #4f46e5)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 700, color: 'white', flexShrink: 0 }}>
+            {initials}
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '13px', fontWeight: 600, color: '#f4f4f5', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {workspace?.name || 'My Workspace'}
+          </div>
+          <div style={{ fontSize: '11px', color: '#52525b' }}>Workspace</div>
+        </div>
+        <ChevronDown size={14} color="#52525b" style={{ flexShrink: 0 }} />
+      </button>
+
+      {open && (
+        <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '4px', backgroundColor: '#1a1a1d', border: '1px solid #27272a', borderRadius: '10px', overflow: 'hidden', zIndex: 100 }}>
+          <div style={{ padding: '8px 12px', borderBottom: '1px solid #1e1e22' }}>
+            <div style={{ fontSize: '11px', color: '#52525b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Workspaces</div>
+          </div>
+          <div style={{ padding: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {workspace?.logo_url ? (
+              <img src={workspace.logo_url} alt="Logo" style={{ width: '24px', height: '24px', borderRadius: '6px', objectFit: 'cover' }} />
+            ) : (
+              <div style={{ width: '24px', height: '24px', borderRadius: '6px', background: `linear-gradient(135deg, ${accent}, #4f46e5)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: 'white' }}>
+                {initials}
+              </div>
+            )}
+            <span style={{ fontSize: '13px', color: '#f4f4f5', flex: 1 }}>{workspace?.name || 'My Workspace'}</span>
+            <Check size={12} color={accent} />
+          </div>
+          <div style={{ borderTop: '1px solid #1e1e22', padding: '6px' }}>
+            <button
+              onClick={() => setOpen(false)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 6px', borderRadius: '6px', border: 'none', backgroundColor: 'transparent', color: '#71717a', fontSize: '13px', cursor: 'pointer' }}
+            >
+              <Plus size={14} /> Add Brand
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Check({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { workspace } = useWorkspace();
+  const accent = workspace?.brand_color || '#7c3aed';
+
+  // Inject CSS variable for accent color
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', accent);
+  }, [accent]);
 
   const isActive = (href: string) => {
     if (href === '/dashboard') return pathname === '/dashboard';
@@ -36,14 +113,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       borderRight: '1px solid #1e1e22', display: 'flex', flexDirection: 'column',
       padding: '16px 12px', flexShrink: 0
     }}>
-      {/* Logo */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', marginBottom: '24px' }}>
+      {/* Krato Logo */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', marginBottom: '16px' }}>
         <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Zap size={18} color="white" />
         </div>
         <span style={{ fontSize: '18px', fontWeight: 800, color: '#f4f4f5', letterSpacing: '-0.3px' }}>Krato</span>
         <span style={{ fontSize: '10px', color: '#7c3aed', fontWeight: 600, backgroundColor: 'rgba(124,58,237,0.15)', padding: '2px 6px', borderRadius: '4px', marginLeft: 'auto' }}>BETA</span>
       </div>
+
+      {/* Workspace Switcher */}
+      <WorkspaceSwitcher workspace={workspace} accent={accent} />
 
       {/* Nav */}
       <nav style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -57,12 +137,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
                 padding: '10px 12px', borderRadius: '8px',
-                backgroundColor: active ? 'rgba(124,58,237,0.12)' : 'transparent',
-                color: active ? '#a78bfa' : '#71717a',
+                backgroundColor: active ? `${accent}1a` : 'transparent',
+                color: active ? accent : '#71717a',
                 fontSize: '14px', fontWeight: active ? 600 : 400,
                 textDecoration: 'none', cursor: 'pointer',
                 transition: 'all 0.15s ease',
-                borderLeft: active ? '3px solid #7c3aed' : '3px solid transparent',
+                borderLeft: active ? `3px solid ${accent}` : '3px solid transparent',
               }}
             >
               <item.icon size={18} />
@@ -76,12 +156,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Footer */}
       <div style={{ borderTop: '1px solid #1e1e22', paddingTop: '12px', marginTop: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px' }}>
-          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#27272a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 600, color: '#a78bfa' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '8px', backgroundColor: '#27272a', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '13px', fontWeight: 600, color: accent }}>
             K
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: '13px', fontWeight: 500, color: '#d4d4d8' }}>Khush</div>
-            <div style={{ fontSize: '11px', color: '#52525b' }}>Oltaflock AI</div>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: '#d4d4d8' }}>Account</div>
+            <div style={{ fontSize: '11px', color: '#52525b' }}>{workspace?.name || 'Krato'}</div>
           </div>
           <button onClick={() => router.push('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: '4px' }}>
             <LogOut size={16} />
@@ -104,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={14} color="white" />
             </div>
-            <span style={{ fontSize: '16px', fontWeight: 700, color: '#f4f4f5' }}>Krato</span>
+            <span style={{ fontSize: '16px', fontWeight: 700, color: '#f4f4f5' }}>{workspace?.name || 'Krato'}</span>
           </div>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: '#d4d4d8', cursor: 'pointer' }}>
             {sidebarOpen ? <X size={22} /> : <Menu size={22} />}

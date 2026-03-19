@@ -1,6 +1,5 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { Zap, BarChart3, Target, Brain, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {

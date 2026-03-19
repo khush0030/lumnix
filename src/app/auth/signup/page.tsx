@@ -28,7 +28,7 @@ export default function SignUpPage() {
       } catch {}
     }
 
-    router.push('/dashboard');
+    router.push('/onboarding');
   }
 
   async function handleGoogleSignUp() {

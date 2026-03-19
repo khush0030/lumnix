@@ -5,8 +5,8 @@ export function PageShell({ title, description, icon: Icon, badge, children }: {
   title: string; description: string; icon: LucideIcon; badge?: string; children: React.ReactNode;
 }) {
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px' }}>
+    <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: 'linear-gradient(135deg, rgba(124,58,237,0.15), rgba(79,70,229,0.15))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon size={22} color="#a78bfa" />

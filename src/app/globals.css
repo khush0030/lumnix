@@ -64,6 +64,19 @@ body {
   margin-bottom: 24px;
 }
 
+@media (max-width: 900px) {
+  /* Charts/wide panels stack vertically */
+  .two-col {
+    grid-template-columns: 1fr !important;
+  }
+  .two-col-equal {
+    grid-template-columns: 1fr !important;
+  }
+  .three-col {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
 @media (max-width: 768px) {
   /* Main content padding on mobile */
   .main-content {
@@ -72,25 +85,20 @@ body {
     overflow-x: hidden !important;
   }
 
-  /* All grids collapse to single column */
-  .kpi-grid,
-  .kpi-grid-3,
-  .two-col,
-  .two-col-equal,
-  .three-col {
-    grid-template-columns: 1fr 1fr !important;
+  /* KPI grid: 2x2 on mobile */
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+  .kpi-grid-3 {
+    grid-template-columns: repeat(2, 1fr) !important;
     gap: 10px !important;
   }
 
-  /* Force single col on very small screens */
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  /* Charts and wide panels go full width */
-  .two-col > *,
-  .two-col-equal > * {
-    min-width: 0;
+  /* KPI card font sizes scale down */
+  .kpi-grid > div,
+  .kpi-grid-3 > div {
+    padding: 14px !important;
   }
 
   /* Tables: allow horizontal scroll */
@@ -98,7 +106,11 @@ body {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
   }
+
+  /* Prevent content overflow */
+  * { max-width: 100%; }
 
   /* Hide sidebar on mobile (already handled) */
   .desktop-sidebar { display: none !important; }
@@ -108,9 +120,7 @@ body {
 @media (max-width: 480px) {
   .kpi-grid,
   .kpi-grid-3,
-  .two-col,
-  .two-col-equal,
   .three-col {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr 1fr !important;
   }
 }

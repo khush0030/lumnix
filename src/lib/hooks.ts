@@ -79,7 +79,13 @@ export async function connectIntegration(provider: string, workspaceId: string) 
 
 // Sync data for an integration
 export async function syncIntegration(integrationId: string, workspaceId: string, provider: string) {
-  const endpoint = provider === "gsc" ? "/api/sync/gsc" : provider === "ga4" ? "/api/sync/ga4" : null;
+  const endpointMap: Record<string, string> = {
+    gsc: "/api/sync/gsc",
+    ga4: "/api/sync/ga4",
+    google_ads: "/api/sync/google-ads",
+    meta_ads: "/api/sync/meta-ads",
+  };
+  const endpoint = endpointMap[provider];
   if (!endpoint) return null;
 
   const res = await fetch(endpoint, {

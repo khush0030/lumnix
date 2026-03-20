@@ -1,0 +1,64 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { getSupabaseAdmin } from '@/lib/supabase-admin';
+import { fetchGoogleAdsCampaigns, fetchGoogleAdsAccounts } from '@/lib/connectors/google-ads';
+import { refreshAccessToken } from '@/lib/google-oauth';
+
+export async function POST(req: NextRequest) {
+  try {
+    const { integration_id, workspace_id } = await req.json();
+
+    const { data: tokenRow } = await getSupabaseAdmin()
+      .from('oauth_tokens')
+      .select('*')
+      .eq('integration_id', integration_id)
+      .single();
+
+    if (!tokenRow) return NextResponse.json({ error: 'No tokens found' }, { status: 404 });
+
+    let accessToken = tokenRow.access_token;
+    if (tokenRow.expires_at && new Date(tokenRow.expires_at) < new Date()) {
+      const refreshed = await refreshAccessToken(tokenRow.refresh_token);
+      if (refreshed.error) return NextResponse.json({ error: 'Token refresh failed' }, { status: 401 });
+      accessToken = refreshed.access_token;
+      await getSupabaseAdmin().from('oauth_tokens').update({
+        access_token: refreshed.access_token,
+        expires_at: new Date(Date.now() + refreshed.expires_in * 1000).toISOString(),
+      }).eq('id', tokenRow.id);
+    }
+
+    // Get customer accounts
+    const customerIds = await fetchGoogleAdsAccounts(accessToken);
+    if (!customerIds.length) {
+      return NextResponse.json({ error: 'No Google Ads accounts found. Make sure you have access to a Google Ads account.' }, { status: 404 });
+    }
+
+    const customerId = customerIds[0].replace(/-/g, '');
+    const campaigns = await fetchGoogleAdsCampaigns(accessToken, customerId);
+
+    // Store in analytics_data as JSONB
+    await getSupabaseAdmin().from('analytics_data').delete()
+      .eq('workspace_id', workspace_id)
+      .eq('provider', 'google_ads');
+
+    if (campaigns.length > 0) {
+      await getSupabaseAdmin().from('analytics_data').insert({
+        workspace_id,
+        provider: 'google_ads',
+        metric_type: 'campaigns',
+        data: campaigns,
+        date_range_start: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        date_range_end: new Date().toISOString().split('T')[0],
+      });
+    }
+
+    await getSupabaseAdmin().from('integrations').update({
+      status: 'connected',
+      last_sync_at: new Date().toISOString(),
+      oauth_meta: { customer_id: customerId },
+    }).eq('id', integration_id);
+
+    return NextResponse.json({ success: true, campaigns_synced: campaigns.length, customer_id: customerId });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message || 'Sync failed' }, { status: 500 });
+  }
+}

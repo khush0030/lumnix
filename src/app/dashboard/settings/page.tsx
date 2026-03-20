@@ -332,7 +332,7 @@ export default function SettingsPage() {
                     }}>
                       {connected ? "Connected ✓" : "Connect"}
                     </button>
-                    {connected && (p.id === "gsc" || p.id === "ga4") && (
+                    {connected && (
                       <button onClick={() => handleSync(p.id)} disabled={isSyncing} style={{
                         padding: "10px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 600, cursor: isSyncing ? "wait" : "pointer",
                         background: "#27272a", color: "#d4d4d8", border: "1px solid #3f3f46",

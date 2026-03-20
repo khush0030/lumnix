@@ -1,32 +1,131 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { Brain, Send, BarChart3, TrendingUp, Zap, Search, Target } from 'lucide-react';
+import { Brain, Send, BarChart3, TrendingUp, Zap, Search, Target, Copy, Check, Trash2, Database, Wifi, WifiOff } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
-import { useWorkspace } from '@/lib/hooks';
+import { useWorkspace, useIntegrations } from '@/lib/hooks';
 
-const suggestions = [
-  { icon: TrendingUp, text: 'Why did my traffic change this week?' },
-  { icon: Search, text: 'What are my top performing keywords?' },
-  { icon: Target, text: 'Which competitor is running the most ads?' },
-  { icon: Zap, text: 'How can I improve my Google Ads ROAS?' },
-  { icon: BarChart3, text: 'What pages have the highest bounce rate?' },
+const SUGGESTIONS = [
+  { icon: TrendingUp, text: 'How is my traffic trending this month?', category: 'Analytics' },
+  { icon: Search, text: 'What are my top 10 keywords by clicks?', category: 'SEO' },
+  { icon: BarChart3, text: 'Which pages have the highest bounce rate?', category: 'Analytics' },
+  { icon: Target, text: 'What\'s my best traffic source?', category: 'Analytics' },
+  { icon: Zap, text: 'Give me 3 quick wins to improve my SEO', category: 'Strategy' },
+  { icon: Brain, text: 'Summarise my marketing performance this month', category: 'Overview' },
 ];
 
-type Message = { role: 'user' | 'assistant'; content: string };
+type Message = { role: 'user' | 'assistant'; content: string; timestamp?: Date };
 
-function renderContent(text: string) {
-  // Replace **bold** with <strong>
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
+// Parse markdown into JSX
+function MarkdownRenderer({ content }: { content: string }) {
+  const lines = content.split('\n');
+  const elements: JSX.Element[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // H3
+    if (line.startsWith('### ')) {
+      elements.push(<h3 key={i} style={{ fontSize: 15, fontWeight: 700, color: '#f4f4f5', margin: '12px 0 4px' }}>{line.slice(4)}</h3>);
     }
-    return <span key={i}>{part}</span>;
-  });
+    // H2
+    else if (line.startsWith('## ')) {
+      elements.push(<h2 key={i} style={{ fontSize: 16, fontWeight: 700, color: '#f4f4f5', margin: '14px 0 6px', borderBottom: '1px solid #3f3f46', paddingBottom: 4 }}>{line.slice(3)}</h2>);
+    }
+    // Bullet list
+    else if (line.startsWith('- ') || line.startsWith('* ')) {
+      const listItems: JSX.Element[] = [];
+      while (i < lines.length && (lines[i].startsWith('- ') || lines[i].startsWith('* '))) {
+        listItems.push(
+          <li key={i} style={{ color: '#d4d4d8', fontSize: 14, lineHeight: 1.6, marginBottom: 3 }}>
+            {formatInline(lines[i].slice(2))}
+          </li>
+        );
+        i++;
+      }
+      elements.push(<ul key={`ul-${i}`} style={{ paddingLeft: 20, margin: '6px 0' }}>{listItems}</ul>);
+      continue;
+    }
+    // Numbered list
+    else if (/^\d+\.\s/.test(line)) {
+      const listItems: JSX.Element[] = [];
+      while (i < lines.length && /^\d+\.\s/.test(lines[i])) {
+        listItems.push(
+          <li key={i} style={{ color: '#d4d4d8', fontSize: 14, lineHeight: 1.6, marginBottom: 3 }}>
+            {formatInline(lines[i].replace(/^\d+\.\s/, ''))}
+          </li>
+        );
+        i++;
+      }
+      elements.push(<ol key={`ol-${i}`} style={{ paddingLeft: 20, margin: '6px 0' }}>{listItems}</ol>);
+      continue;
+    }
+    // Code block
+    else if (line.startsWith('```')) {
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].startsWith('```')) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      elements.push(
+        <pre key={i} style={{ backgroundColor: '#0f0f10', border: '1px solid #27272a', borderRadius: 8, padding: '10px 14px', fontSize: 12, color: '#a78bfa', overflowX: 'auto', margin: '8px 0', fontFamily: 'monospace' }}>
+          {codeLines.join('\n')}
+        </pre>
+      );
+    }
+    // Horizontal rule
+    else if (line === '---' || line === '***') {
+      elements.push(<hr key={i} style={{ border: 'none', borderTop: '1px solid #27272a', margin: '10px 0' }} />);
+    }
+    // Empty line
+    else if (line.trim() === '') {
+      elements.push(<div key={i} style={{ height: 6 }} />);
+    }
+    // Regular paragraph
+    else {
+      elements.push(<p key={i} style={{ color: '#d4d4d8', fontSize: 14, lineHeight: 1.65, margin: '2px 0' }}>{formatInline(line)}</p>);
+    }
+    i++;
+  }
+
+  return <div>{elements}</div>;
+}
+
+function formatInline(text: string): JSX.Element {
+  // Bold **text**
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i} style={{ color: '#f4f4f5', fontWeight: 600 }}>{part.slice(2, -2)}</strong>;
+        }
+        if (part.startsWith('`') && part.endsWith('`')) {
+          return <code key={i} style={{ backgroundColor: '#27272a', color: '#a78bfa', padding: '1px 5px', borderRadius: 4, fontSize: 12, fontFamily: 'monospace' }}>{part.slice(1, -1)}</code>;
+        }
+        return <span key={i}>{part}</span>;
+      })}
+    </>
+  );
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={() => { navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+      style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: '4px', borderRadius: 4, display: 'flex', alignItems: 'center' }}
+      title="Copy"
+    >
+      {copied ? <Check size={13} color="#22c55e" /> : <Copy size={13} />}
+    </button>
+  );
 }
 
 export default function AIPage() {
   const { workspace } = useWorkspace();
+  const { integrations } = useIntegrations(workspace?.id);
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -35,6 +134,9 @@ export default function AIPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  const connectedSources = integrations.filter(i => i.status === 'connected').map(i => i.provider);
+  const hasData = connectedSources.length > 0;
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, loading]);
@@ -42,7 +144,7 @@ export default function AIPage() {
   async function sendMessage(text: string) {
     if (!text.trim() || loading || streaming) return;
     setError(null);
-    const userMsg: Message = { role: 'user', content: text };
+    const userMsg: Message = { role: 'user', content: text, timestamp: new Date() };
     const newMessages = [...messages, userMsg];
     setMessages(newMessages);
     setInput('');
@@ -52,39 +154,35 @@ export default function AIPage() {
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: newMessages,
-          workspace_id: workspace?.id,
-        }),
+        body: JSON.stringify({ messages: newMessages.map(m => ({ role: m.role, content: m.content })), workspace_id: workspace?.id }),
       });
 
       if (!response.ok) {
-        const errText = await response.text();
-        setError(errText || 'Something went wrong. Please try again.');
+        setError((await response.text()) || 'Something went wrong.');
         setLoading(false);
         return;
       }
 
       const reader = response.body!.getReader();
       const decoder = new TextDecoder();
-      let assistantContent = '';
+      let content = '';
 
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: '', timestamp: new Date() }]);
       setLoading(false);
       setStreaming(true);
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        assistantContent += decoder.decode(value);
+        content += decoder.decode(value);
         setMessages(prev => {
           const updated = [...prev];
-          updated[updated.length - 1] = { role: 'assistant', content: assistantContent };
+          updated[updated.length - 1] = { ...updated[updated.length - 1], content };
           return updated;
         });
       }
       setStreaming(false);
-    } catch (e: any) {
+    } catch {
       setError('Connection error. Please try again.');
       setLoading(false);
       setStreaming(false);
@@ -94,74 +192,93 @@ export default function AIPage() {
   const isIdle = !loading && !streaming;
 
   return (
-    <PageShell title="AI Assistant" description="Ask questions about your marketing data" icon={Brain} badge="POWERED BY CLAUDE">
-      <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '16px', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)', minHeight: '500px' }}>
+    <PageShell title="AI Assistant" description="Ask questions about your marketing data in plain English" icon={Brain} badge="GPT-4o-mini">
+      {/* Data context bar */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16, padding: '10px 16px', borderRadius: 10, backgroundColor: '#18181b', border: '1px solid #27272a' }}>
+        {hasData ? <Wifi size={14} color="#22c55e" /> : <WifiOff size={14} color="#71717a" />}
+        <span style={{ fontSize: 12, color: '#71717a' }}>
+          {hasData
+            ? `AI has access to: ${connectedSources.map(s => s.replace('_', ' ').toUpperCase()).join(' · ')}`
+            : 'No data connected yet — connect integrations in Settings for data-aware answers'
+          }
+        </span>
+        <Database size={12} color="#52525b" style={{ marginLeft: 'auto' }} />
+        <span style={{ fontSize: 11, color: '#52525b' }}>Live data context</span>
+      </div>
+
+      <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: 16, display: 'flex', flexDirection: 'column', height: 'calc(100vh - 260px)', minHeight: 500 }}>
         {/* Chat area */}
-        <div style={{ flex: 1, padding: '24px', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ flex: 1, padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           {messages.length === 0 ? (
-            /* Empty state */
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+              <div style={{ width: 64, height: 64, borderRadius: 16, background: 'linear-gradient(135deg, rgba(124,58,237,0.2), rgba(79,70,229,0.2))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
                 <Brain size={28} color="#a78bfa" />
               </div>
-              <h3 style={{ fontSize: '20px', fontWeight: 700, color: '#f4f4f5', marginBottom: '8px' }}>Ask Lumnix AI</h3>
-              <p style={{ fontSize: '14px', color: '#71717a', maxWidth: '420px', lineHeight: 1.6, marginBottom: '32px' }}>
-                Your data-aware marketing assistant. Ask me about traffic trends, keyword opportunities, competitor activity, and more.
+              <h3 style={{ fontSize: 20, fontWeight: 700, color: '#f4f4f5', marginBottom: 8 }}>Ask Lumnix AI</h3>
+              <p style={{ fontSize: 14, color: '#71717a', maxWidth: 420, lineHeight: 1.6, marginBottom: 32 }}>
+                Your data-aware marketing assistant. Powered by GPT-4o-mini with full context of your connected marketing data.
               </p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', maxWidth: '540px', width: '100%' }}>
-                {suggestions.map(s => (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, maxWidth: 560, width: '100%' }}>
+                {SUGGESTIONS.map(s => (
                   <button
                     key={s.text}
                     onClick={() => { setInput(s.text); inputRef.current?.focus(); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '12px 14px', borderRadius: '10px',
-                      border: '1px solid #27272a', backgroundColor: '#1c1c1f',
-                      color: '#a1a1aa', fontSize: '13px', cursor: 'pointer',
-                      textAlign: 'left', transition: 'border-color 0.15s',
-                    }}
+                    style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '12px 14px', borderRadius: 10, border: '1px solid #27272a', backgroundColor: '#1c1c1f', color: '#a1a1aa', fontSize: 13, cursor: 'pointer', textAlign: 'left', lineHeight: 1.4 }}
                   >
-                    <s.icon size={15} color="#7c3aed" style={{ flexShrink: 0 }} />
-                    {s.text}
+                    <s.icon size={15} color="#7c3aed" style={{ flexShrink: 0, marginTop: 1 }} />
+                    <div>
+                      <div style={{ fontSize: 11, color: '#52525b', marginBottom: 2 }}>{s.category}</div>
+                      {s.text}
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               {messages.map((msg, i) => (
-                <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: '10px' }}>
+                <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', alignItems: 'flex-start', gap: 10 }}>
                   {msg.role === 'assistant' && (
-                    <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.3))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                    <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.3))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                       <Brain size={14} color="#a78bfa" />
                     </div>
                   )}
-                  <div style={{
-                    maxWidth: '75%', padding: '12px 16px', borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
-                    backgroundColor: msg.role === 'user' ? '#7c3aed' : '#27272a',
-                    color: msg.role === 'user' ? 'white' : '#d4d4d8',
-                    fontSize: '14px', lineHeight: 1.65, whiteSpace: 'pre-wrap',
-                  }}>
-                    {msg.content
-                      ? renderContent(msg.content)
-                      : msg.role === 'assistant'
-                        ? <span style={{ opacity: 0.4 }}>●●●</span>
-                        : null
-                    }
-                    {/* Streaming cursor */}
-                    {msg.role === 'assistant' && streaming && i === messages.length - 1 && msg.content && (
-                      <span style={{ display: 'inline-block', width: '2px', height: '14px', backgroundColor: '#a78bfa', marginLeft: '2px', verticalAlign: 'middle', animation: 'pulse 1s ease infinite' }} />
+                  <div style={{ maxWidth: '78%' }}>
+                    <div style={{
+                      padding: '12px 16px',
+                      borderRadius: msg.role === 'user' ? '14px 14px 4px 14px' : '14px 14px 14px 4px',
+                      backgroundColor: msg.role === 'user' ? '#7c3aed' : '#27272a',
+                    }}>
+                      {msg.role === 'user' ? (
+                        <p style={{ color: 'white', fontSize: 14, lineHeight: 1.6, margin: 0 }}>{msg.content}</p>
+                      ) : msg.content ? (
+                        <MarkdownRenderer content={msg.content} />
+                      ) : (
+                        <span style={{ color: '#71717a', fontSize: 14 }}>●●●</span>
+                      )}
+                      {msg.role === 'assistant' && streaming && i === messages.length - 1 && msg.content && (
+                        <span style={{ display: 'inline-block', width: 2, height: 14, backgroundColor: '#a78bfa', marginLeft: 2, verticalAlign: 'middle' }} />
+                      )}
+                    </div>
+                    {/* Actions below assistant messages */}
+                    {msg.role === 'assistant' && msg.content && !streaming && (
+                      <div style={{ display: 'flex', gap: 4, marginTop: 4, paddingLeft: 4 }}>
+                        <CopyButton text={msg.content} />
+                        <span style={{ fontSize: 11, color: '#3f3f46', alignSelf: 'center' }}>
+                          {msg.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
                     )}
                   </div>
                 </div>
               ))}
               {loading && (
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  <div style={{ width: '28px', height: '28px', borderRadius: '8px', background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.3))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(79,70,229,0.3))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <Brain size={14} color="#a78bfa" />
                   </div>
-                  <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: '#27272a', color: '#71717a', fontSize: '13px' }}>
-                    Lumnix AI is thinking...
+                  <div style={{ padding: '12px 16px', borderRadius: '14px 14px 14px 4px', backgroundColor: '#27272a', color: '#71717a', fontSize: 13 }}>
+                    Analysing your data...
                   </div>
                 </div>
               )}
@@ -170,46 +287,44 @@ export default function AIPage() {
           )}
         </div>
 
-        {/* Error */}
         {error && (
-          <div style={{ margin: '0 24px', padding: '10px 16px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', color: '#f87171', fontSize: '13px' }}>
+          <div style={{ margin: '0 24px', padding: '10px 16px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#f87171', fontSize: 13 }}>
             {error}
           </div>
         )}
 
         {/* Input bar */}
         <div style={{ padding: '16px 24px', borderTop: '1px solid #27272a' }}>
-          <div style={{ display: 'flex', gap: '10px' }}>
+          {messages.length > 0 && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <button
+                onClick={() => setMessages([])}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 6, border: '1px solid #27272a', backgroundColor: 'transparent', color: '#52525b', fontSize: 12, cursor: 'pointer' }}
+              >
+                <Trash2 size={11} /> Clear chat
+              </button>
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: 10 }}>
             <input
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-              placeholder="Ask anything about your marketing..."
+              placeholder="Ask anything about your marketing data..."
               disabled={!isIdle}
-              style={{
-                flex: 1, padding: '12px 16px', borderRadius: '10px',
-                border: '1px solid #3f3f46', backgroundColor: '#27272a',
-                color: 'white', fontSize: '14px', outline: 'none',
-                opacity: !isIdle ? 0.7 : 1,
-              }}
+              style={{ flex: 1, padding: '12px 16px', borderRadius: 10, border: '1px solid #3f3f46', backgroundColor: '#27272a', color: 'white', fontSize: 14, outline: 'none', opacity: !isIdle ? 0.7 : 1, fontFamily: 'var(--font-body)' }}
             />
             <button
               onClick={() => sendMessage(input)}
               disabled={!isIdle || !input.trim()}
-              style={{
-                padding: '12px 16px', borderRadius: '10px', border: 'none',
-                background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-                color: 'white', cursor: (!isIdle || !input.trim()) ? 'not-allowed' : 'pointer',
-                display: 'flex', alignItems: 'center',
-                opacity: (!isIdle || !input.trim()) ? 0.5 : 1,
-              }}
+              style={{ padding: '12px 16px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', cursor: (!isIdle || !input.trim()) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', opacity: (!isIdle || !input.trim()) ? 0.5 : 1 }}
             >
               <Send size={18} />
             </button>
           </div>
-          <p style={{ fontSize: '11px', color: '#52525b', marginTop: '8px', textAlign: 'center' }}>
-            Powered by Claude · Lumnix AI has access to your connected marketing data
+          <p style={{ fontSize: 11, color: '#3f3f46', marginTop: 8, textAlign: 'center' }}>
+            Powered by GPT-4o-mini · Context: {connectedSources.length} data source{connectedSources.length !== 1 ? 's' : ''} connected
           </p>
         </div>
       </div>

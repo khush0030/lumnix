@@ -131,3 +131,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ success: true, adsFound: adsToUpsert.length });
 }
+

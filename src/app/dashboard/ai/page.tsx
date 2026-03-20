@@ -92,7 +92,7 @@ function MarkdownRenderer({ content }: { content: string }) {
   return <div>{elements}</div>;
 }
 
-function formatInline(text: string): JSX.Element {
+function formatInline(text: string): ReactElement {
   // Bold **text**
   const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g);
   return (

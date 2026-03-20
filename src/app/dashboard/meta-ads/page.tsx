@@ -1,89 +1,120 @@
 'use client';
-import { Target, Eye, MousePointer, DollarSign, ArrowUpRight } from 'lucide-react';
+import { useState } from 'react';
+import { Target, Eye, MousePointer, DollarSign, Plug, RefreshCw, AlertCircle } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { DateRangePicker } from '@/components/DateRangePicker';
+import { useWorkspace, useIntegrations, connectIntegration, syncIntegration } from '@/lib/hooks';
 
-const adSets = [
-  { name: 'Lookalike - Website Visitors', status: 'Active', spend: 1840, reach: 42000, impressions: 68000, clicks: 1240, ctr: 1.82, roas: 3.8 },
-  { name: 'Interest - Small Business Owners', status: 'Active', spend: 2100, reach: 56000, impressions: 89000, clicks: 1680, ctr: 1.89, roas: 4.1 },
-  { name: 'Retargeting - Cart Abandoners', status: 'Active', spend: 680, reach: 8400, impressions: 24000, clicks: 920, ctr: 3.83, roas: 7.2 },
-  { name: 'Broad - AI Automation', status: 'Learning', spend: 940, reach: 34000, impressions: 52000, clicks: 480, ctr: 0.92, roas: 1.4 },
-];
-
-const spendTrend = Array.from({ length: 14 }, (_, i) => ({
-  day: `Mar ${i + 5}`,
-  spend: Math.floor(350 + Math.random() * 150),
-  roas: +(3.2 + Math.random() * 2).toFixed(1),
-}));
-
-export default function MetaAdsPage() {
+function NotConnected({ onConnect, connecting }: { onConnect: () => void; connecting: boolean }) {
   return (
-    <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
-      <div className="kpi-grid">
-        {[
-          { label: 'Total Spend', value: '$5,560', change: '+8.3%', icon: DollarSign, color: '#f59e0b' },
-          { label: 'Reach', value: '140.4K', change: '+12.1%', icon: Eye, color: '#3b82f6' },
-          { label: 'Clicks', value: '4,320', change: '+15.7%', icon: MousePointer, color: '#7c3aed' },
-          { label: 'ROAS', value: '3.8x', change: '+0.4x', icon: Target, color: '#22c55e' },
-        ].map(kpi => (
-          <div key={kpi.label} style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '12px', padding: '18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px' }}>
-              <kpi.icon size={14} color={kpi.color} />
-              <span style={{ fontSize: '12px', color: '#71717a' }}>{kpi.label}</span>
-            </div>
-            <div style={{ fontSize: '24px', fontWeight: 700, color: '#f4f4f5' }}>{kpi.value}</div>
-            <div style={{ fontSize: '12px', color: '#22c55e', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-              <ArrowUpRight size={12} /> {kpi.change}
-            </div>
-          </div>
+    <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+      <div style={{ width: 64, height: 64, borderRadius: 16, backgroundColor: 'rgba(24,119,242,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+        <Target size={28} color="#1877F2" />
+      </div>
+      <h2 style={{ fontSize: 20, fontWeight: 700, color: '#f4f4f5', marginBottom: 8 }}>Connect Meta Ads</h2>
+      <p style={{ fontSize: 14, color: '#71717a', marginBottom: 28, maxWidth: 400, margin: '0 auto 28px' }}>
+        Sync Facebook & Instagram ad performance. See ROAS, creative fatigue, audience overlap, and spend trends.
+      </p>
+      <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 32 }}>
+        {['Campaign ROAS', 'Creative fatigue alerts', 'Audience overlap', 'Spend pacing'].map(f => (
+          <span key={f} style={{ fontSize: 12, color: '#a1a1aa', backgroundColor: '#27272a', padding: '6px 12px', borderRadius: 20 }}>{f}</span>
         ))}
       </div>
+      <button
+        onClick={onConnect}
+        disabled={connecting}
+        style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg, #1877F2, #4f46e5)', color: 'white', fontSize: 14, fontWeight: 600, cursor: connecting ? 'wait' : 'pointer', opacity: connecting ? 0.7 : 1 }}
+      >
+        <Plug size={16} /> {connecting ? 'Connecting...' : 'Connect Meta Ads'}
+      </button>
+      <p style={{ fontSize: 12, color: '#52525b', marginTop: 16 }}>
+        Requires a Meta Business account with ad access
+      </p>
+    </div>
+  );
+}
 
-      <div className="two-col">
-        {/* Ad Sets Table */}
-        <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Ad Sets</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr>{['Ad Set', 'Status', 'Spend', 'Reach', 'CTR', 'ROAS'].map(h => (
-                <th key={h} style={{ textAlign: 'left', fontSize: '11px', fontWeight: 600, color: '#52525b', textTransform: 'uppercase', paddingBottom: '10px', borderBottom: '1px solid #27272a' }}>{h}</th>
-              ))}</tr>
-            </thead>
-            <tbody>
-              {adSets.map(ad => (
-                <tr key={ad.name} style={{ borderBottom: '1px solid #1e1e22' }}>
-                  <td style={{ padding: '10px 0', fontSize: '13px', color: '#e4e4e7', fontWeight: 500, maxWidth: '200px' }}>
-                    <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ad.name}</div>
-                  </td>
-                  <td style={{ padding: '10px 8px' }}>
-                    <span style={{ fontSize: '11px', fontWeight: 600, padding: '2px 8px', borderRadius: '10px', backgroundColor: ad.status === 'Active' ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)', color: ad.status === 'Active' ? '#22c55e' : '#f59e0b' }}>{ad.status}</span>
-                  </td>
-                  <td style={{ padding: '10px 8px', fontSize: '13px', color: '#a1a1aa' }}>${ad.spend.toLocaleString()}</td>
-                  <td style={{ padding: '10px 8px', fontSize: '13px', color: '#a1a1aa' }}>{(ad.reach / 1000).toFixed(1)}K</td>
-                  <td style={{ padding: '10px 8px', fontSize: '13px', color: '#a1a1aa' }}>{ad.ctr}%</td>
-                  <td style={{ padding: '10px 0', fontSize: '13px', fontWeight: 600, color: ad.roas >= 4 ? '#22c55e' : ad.roas >= 2 ? '#f59e0b' : '#ef4444' }}>{ad.roas}x</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+export default function MetaAdsPage() {
+  const [days, setDays] = useState(30);
+  const [connecting, setConnecting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const { workspace } = useWorkspace();
+  const { integrations, refetch } = useIntegrations(workspace?.id);
 
-        {/* Spend vs ROAS chart */}
-        <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '14px', padding: '24px' }}>
-          <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#f4f4f5', marginBottom: '16px' }}>Spend Trend</h2>
-          <ResponsiveContainer width="100%" height={250}>
-            <AreaChart data={spendTrend}>
-              <defs>
-                <linearGradient id="gMeta" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#3b82f6" stopOpacity={0.2} /><stop offset="100%" stopColor="#3b82f6" stopOpacity={0} /></linearGradient>
-              </defs>
-              <XAxis dataKey="day" stroke="#3f3f46" tick={{ fill: '#52525b', fontSize: 10 }} axisLine={false} tickLine={false} interval={2} />
-              <YAxis stroke="#3f3f46" tick={{ fill: '#52525b', fontSize: 10 }} axisLine={false} tickLine={false} />
-              <Tooltip contentStyle={{ backgroundColor: '#27272a', border: '1px solid #3f3f46', borderRadius: '8px', color: '#f4f4f5', fontSize: '12px' }} />
-              <Area type="monotone" dataKey="spend" stroke="#3b82f6" fill="url(#gMeta)" strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+  const integration = integrations.find(i => i.provider === 'meta_ads' && i.status === 'connected');
+  const isConnected = !!integration;
+
+  async function handleConnect() {
+    if (!workspace?.id) return;
+    setConnecting(true);
+    await connectIntegration('meta_ads', workspace.id);
+    setConnecting(false);
+  }
+
+  async function handleSync() {
+    if (!integration || !workspace?.id) return;
+    setSyncing(true);
+    // Meta ads sync endpoint
+    try {
+      const res = await fetch('/api/sync/meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ integration_id: integration.id, workspace_id: workspace.id }),
+      });
+      const result = await res.json();
+      if (result.error) alert(`Sync failed: ${result.error}`);
+      refetch();
+    } catch (err) {
+      alert(`Sync error: ${err}`);
+    }
+    setSyncing(false);
+  }
+
+  return (
+    <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
+      {!isConnected ? (
+        <NotConnected onConnect={handleConnect} connecting={connecting} />
+      ) : (
+        <>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 12, color: '#22c55e', backgroundColor: 'rgba(34,197,94,0.1)', padding: '4px 10px', borderRadius: 6 }}>
+                ✓ Connected{integration.display_name ? ` · ${integration.display_name}` : ''}
+              </span>
+              {integration.last_sync_at && (
+                <span style={{ fontSize: 11, color: '#52525b' }}>Last sync: {new Date(integration.last_sync_at).toLocaleString()}</span>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <DateRangePicker value={days} onChange={setDays} />
+              <button onClick={handleSync} disabled={syncing} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: '1px solid #3f3f46', backgroundColor: '#27272a', color: '#a1a1aa', fontSize: 13, cursor: syncing ? 'wait' : 'pointer' }}>
+                <RefreshCw size={13} /> {syncing ? 'Syncing...' : 'Sync Now'}
+              </button>
+            </div>
+          </div>
+
+          {/* Meta Insights API — needs Business verification */}
+          <div style={{ backgroundColor: '#18181b', border: '1px solid rgba(24,119,242,0.2)', borderRadius: 16, padding: 32, textAlign: 'center' }}>
+            <AlertCircle size={32} color="#1877F2" style={{ margin: '0 auto 16px' }} />
+            <h3 style={{ fontSize: 16, fontWeight: 600, color: '#f4f4f5', marginBottom: 8 }}>Meta Business Verification Required</h3>
+            <p style={{ fontSize: 13, color: '#71717a', maxWidth: 480, margin: '0 auto 20px', lineHeight: 1.6 }}>
+              Your Meta app needs Business Verification to access the Marketing API and pull real ad data. This is a one-time Meta review process.
+            </p>
+            <a
+              href="https://developers.facebook.com/docs/development/release/business-verification"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px', borderRadius: 8, backgroundColor: '#1877F2', color: '#fff', fontSize: 13, fontWeight: 600, textDecoration: 'none' }}
+            >
+              Start Business Verification →
+            </a>
+            <p style={{ fontSize: 12, color: '#52525b', marginTop: 16 }}>
+              Once verified, data will sync automatically. Your connection is already saved.
+            </p>
+          </div>
+        </>
+      )}
     </PageShell>
   );
 }

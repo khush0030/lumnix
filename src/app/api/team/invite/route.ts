@@ -64,12 +64,14 @@ export async function POST(req: NextRequest) {
     const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?invite=${token}`;
     const inviterName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Someone';
 
-    // Send email via Resend
-    const { error: emailError } = await resend.emails.send({
-      from: 'Lumnix <onboarding@resend.dev>',
-      to: email,
-      subject: `${inviterName} invited you to join ${workspace.name} on Lumnix`,
-      html: `<!DOCTYPE html>
+    // Try sending email via Resend
+    let emailSent = false;
+    try {
+      const { error: emailError } = await resend.emails.send({
+        from: 'Lumnix <onboarding@resend.dev>',
+        to: email,
+        subject: `${inviterName} invited you to join ${workspace.name} on Lumnix`,
+        html: `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><style>
 body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f172a; color: #f8fafc; margin: 0; padding: 0; }
@@ -86,22 +88,27 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
 <div class="container">
   <div class="logo"><span class="l">L</span>umnix</div>
   <h1>You've been invited! 🎉</h1>
-  <p><strong style="color:#f8fafc">${inviterName}</strong> has invited you to join the <strong style="color:#f8fafc">${workspace.name}</strong> workspace on Lumnix — the AI-powered marketing intelligence platform.</p>
-  <p>Click the button below to create your free account and get access:</p>
+  <p><strong style="color:#f8fafc">${inviterName}</strong> has invited you to join the <strong style="color:#f8fafc">${workspace.name}</strong> workspace on Lumnix.</p>
+  <p>Click the button below to create your free account:</p>
   <a href="${inviteUrl}" class="btn">Accept Invitation →</a>
   <hr class="divider">
-  <p class="footer">This invite expires in 7 days. If you weren't expecting this, you can ignore this email.<br><br>© 2026 Oltaflock AI · <a href="https://lumnix-ai.vercel.app" style="color:#7c3aed">lumnix-ai.vercel.app</a></p>
+  <p class="footer">Expires in 7 days · © 2026 Oltaflock AI</p>
 </div>
 </body>
 </html>`,
-    });
-
-    if (emailError) {
-      console.error('Email error:', emailError);
-      return NextResponse.json({ error: 'Failed to send email. Check your email address.' }, { status: 500 });
+      });
+      if (!emailError) emailSent = true;
+    } catch (e) {
+      console.error('Email send failed:', e);
     }
 
-    return NextResponse.json({ success: true, message: `Invite sent to ${email}` });
+    // Always return success with the invite link (so it works even if email fails)
+    return NextResponse.json({
+      success: true,
+      emailSent,
+      inviteUrl,
+      message: emailSent ? `Invite sent to ${email}` : `Invite created — email couldn't be sent (domain not verified). Share this link manually.`,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

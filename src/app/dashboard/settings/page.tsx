@@ -260,7 +260,13 @@ export default function SettingsPage() {
     });
     const data = await res.json();
     setInviteMsg({ text: data.success ? `Invite sent to ${inviteEmail}` : data.error, ok: !!data.success });
-    if (data.success) { setInviteEmail(""); setTeamData(prev => prev ? { ...prev, slotsUsed: prev.slotsUsed + 1, canInviteMore: prev.slotsUsed + 1 < prev.maxSlots, invites: [...prev.invites, { email: inviteEmail, status: 'pending', created_at: new Date().toISOString() }] } : prev); }
+    if (data.success) {
+      setInviteEmail("");
+      setTeamData(prev => prev ? { ...prev, slotsUsed: prev.slotsUsed + 1, canInviteMore: prev.slotsUsed + 1 < prev.maxSlots, invites: [...prev.invites, { email: inviteEmail, status: 'pending', created_at: new Date().toISOString(), inviteUrl: data.inviteUrl }] } : prev);
+      if (!data.emailSent && data.inviteUrl) {
+        setInviteMsg({ text: `Email couldn't send — copy this link and share it: ${data.inviteUrl}`, ok: true });
+      }
+    }
     setInviting(false);
   }
 

@@ -5,13 +5,22 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholde
 
 function createSafeClient() {
   try {
-    return createClient(supabaseUrl, supabaseAnonKey);
+    return createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storageKey: 'lumnix-auth',
+        storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      },
+    });
   } catch {
-    // Return minimal mock if createClient fails (e.g. invalid URL in some envs)
     return {
       auth: {
         getSession: async () => ({ data: { session: null }, error: null }),
+        getUser: async () => ({ data: { user: null }, error: null }),
         signOut: async () => ({}),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
       },
     } as any;
   }

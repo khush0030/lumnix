@@ -1,6 +1,5 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 import { Search, BarChart3, Target, Share2, Check, X, Plug, User, Bell, Shield, CreditCard, RefreshCw, Loader2, Palette, Upload, Users, Mail, Crown } from "lucide-react";
 import { useWorkspace, useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
 import { supabase } from "@/lib/supabase";
@@ -528,3 +527,4 @@ export default function SettingsPage() {
     </div>
   );
 }
+

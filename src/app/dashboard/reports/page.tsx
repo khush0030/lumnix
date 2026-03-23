@@ -697,12 +697,34 @@ function openReport(html: string, filename: string) {
   }
 }
 
-function downloadHTML(html: string, filename: string) {
-  const blob = new Blob([html], { type: 'text/html' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = filename; a.click();
-  URL.revokeObjectURL(url);
+async function downloadPDF(html: string, filename: string) {
+  // Dynamically import html2pdf.js (client-side only, no SSR)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const html2pdf = (await import('html2pdf.js' as string)).default as any;
+
+  // Mount HTML into a hidden off-screen container so fonts/styles render correctly
+  const container = document.createElement('div');
+  container.style.cssText = 'position:fixed;left:-9999px;top:0;width:794px;background:#fff;';
+  container.innerHTML = html;
+  document.body.appendChild(container);
+
+  const pdfFilename = filename.replace(/\.html$/, '.pdf');
+
+  try {
+    await html2pdf()
+      .set({
+        margin: 0,
+        filename: pdfFilename,
+        image: { type: 'jpeg', quality: 0.97 },
+        html2canvas: { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'px', format: [794, 1123], orientation: 'portrait', hotfixes: ['px_scaling'] },
+        pagebreak: { mode: ['avoid-all', 'css'] },
+      })
+      .from(container)
+      .save();
+  } finally {
+    document.body.removeChild(container);
+  }
 }
 
 export default function ReportsPage() {
@@ -749,7 +771,7 @@ export default function ReportsPage() {
     if (format === 'print') {
       openReport(html, filename);
     } else {
-      downloadHTML(html, filename);
+      await downloadPDF(html, filename);
     }
 
     setGenerated(prev => new Set([...prev, `${type}-${format}`]));

@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ── Lumnix Design Tokens ── */
+/* ── Lumnix Design Tokens — Light Theme ── */
 :root {
   /* Brand Colors */
   --color-primary:        #7C3AED;
@@ -11,21 +11,21 @@
   --color-cyan:           #0891B2;
   --color-competitor:     #BE123C;
 
-  /* Backgrounds */
-  --bg-page:    #0F172A;
-  --bg-sidebar: #0F172A;
-  --bg-card:    #1E293B;
-  --bg-surface: #0F172A;
-  --bg-active:  rgba(124,58,237,0.12);
+  /* Backgrounds — Light */
+  --bg-page:    #F8FAFC;
+  --bg-sidebar: #FFFFFF;
+  --bg-card:    #FFFFFF;
+  --bg-surface: #F8FAFC;
+  --bg-active:  #F5F3FF;
 
   /* Borders */
-  --border:        #334155;
-  --border-subtle: #1E293B;
+  --border:        #E2E8F0;
+  --border-subtle: #F1F5F9;
 
   /* Text */
-  --text-primary:   #F8FAFC;
-  --text-secondary: #94A3B8;
-  --text-muted:     #64748B;
+  --text-primary:   #0F172A;
+  --text-secondary: #64748B;
+  --text-muted:     #94A3B8;
 
   /* Semantic */
   --success: #10B981;
@@ -45,14 +45,15 @@
   --r-full: 9999px;
 
   /* Shadows */
-  --shadow-card:  0 1px 3px rgba(0,0,0,.08);
-  --shadow-focus: 0 0 0 3px rgba(124,58,237,.25);
+  --shadow-card:  0 1px 3px rgba(0,0,0,0.06);
+  --shadow-md:    0 4px 12px rgba(0,0,0,0.08);
+  --shadow-focus: 0 0 0 3px rgba(124,58,237,.2);
 
-  /* Legacy compat (used by existing components) */
-  --background:   #0F172A;
-  --foreground:   #F8FAFC;
-  --card:         #1E293B;
-  --card-border:  #334155;
+  /* Legacy compat */
+  --background:   #F8FAFC;
+  --foreground:   #0F172A;
+  --card:         #FFFFFF;
+  --card-border:  #E2E8F0;
   --muted:        #64748B;
   --accent:       #7C3AED;
   --accent-end:   #6D28D9;
@@ -70,7 +71,7 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-display);
-  font-weight: 800;
+  font-weight: 700;
 }
 
 code, pre, kbd, samp {
@@ -84,8 +85,8 @@ code, pre, kbd, samp {
 .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
 
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--bg-page); }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+::-webkit-scrollbar-track { background: #F1F5F9; }
+::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
 
 /* ── Responsive Grid Helpers ── */
 .kpi-grid {
@@ -120,15 +121,9 @@ code, pre, kbd, samp {
 }
 
 @media (max-width: 900px) {
-  .two-col {
-    grid-template-columns: 1fr !important;
-  }
-  .two-col-equal {
-    grid-template-columns: 1fr !important;
-  }
-  .three-col {
-    grid-template-columns: 1fr 1fr !important;
-  }
+  .two-col { grid-template-columns: 1fr !important; }
+  .two-col-equal { grid-template-columns: 1fr !important; }
+  .three-col { grid-template-columns: 1fr 1fr !important; }
 }
 
 @media (max-width: 768px) {
@@ -137,38 +132,15 @@ code, pre, kbd, samp {
     padding-top: 72px !important;
     overflow-x: hidden !important;
   }
-
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
-  .kpi-grid-3 {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-  }
-
-  .kpi-grid > div,
-  .kpi-grid-3 > div {
-    padding: 14px !important;
-  }
-
-  table {
-    display: block;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    white-space: nowrap;
-  }
-
+  .kpi-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .kpi-grid-3 { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; }
+  .kpi-grid > div, .kpi-grid-3 > div { padding: 14px !important; }
+  table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
   * { max-width: 100%; }
-
   .desktop-sidebar { display: none !important; }
   .mobile-header { display: block !important; }
 }
 
 @media (max-width: 480px) {
-  .kpi-grid,
-  .kpi-grid-3,
-  .three-col {
-    grid-template-columns: 1fr 1fr !important;
-  }
+  .kpi-grid, .kpi-grid-3, .three-col { grid-template-columns: 1fr 1fr !important; }
 }

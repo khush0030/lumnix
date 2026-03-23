@@ -5,6 +5,7 @@ import { Target, DollarSign, Eye, MousePointer, TrendingUp, RefreshCw, Play, Pau
 import { PageShell, EmptyState } from '@/components/PageShell';
 import { useWorkspace, useIntegrations } from '@/lib/hooks';
 import { supabase } from '@/lib/supabase';
+import { useTheme } from '@/lib/theme';
 
 function StatusBadge({ status }: { status: string }) {
   const s = status?.toUpperCase();
@@ -23,14 +24,15 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 function StatCard({ icon: Icon, color, label, value, sub }: { icon: any; color: string; label: string; value: string; sub?: string }) {
+  const { c } = useTheme();
   return (
-    <div style={{ backgroundColor: '#FFFFFF', borderRadius: 14, padding: 24, boxShadow: '0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.03)' }}>
+    <div style={{ backgroundColor: c.bgCard, borderRadius: 14, padding: 24, boxShadow: c.shadow }}>
       <div style={{ width: 34, height: 34, borderRadius: 8, backgroundColor: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
         <Icon size={16} color={color} />
       </div>
-      <div style={{ fontSize: 11, fontWeight: 500, color: '#6b7280', textTransform: 'uppercase' as const, letterSpacing: '0.04em', marginBottom: 6 }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 600, color: '#111827', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{value}</div>
-      {sub && <div style={{ fontSize: 12, color: '#9ca3af', marginTop: 4 }}>{sub}</div>}
+      <div style={{ fontSize: 11, fontWeight: 500, color: c.textSecondary, textTransform: 'uppercase' as const, letterSpacing: '0.04em', marginBottom: 6 }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 600, color: c.text, letterSpacing: '-0.03em', lineHeight: 1.1 }}>{value}</div>
+      {sub && <div style={{ fontSize: 12, color: c.textMuted, marginTop: 4 }}>{sub}</div>}
     </div>
   );
 }
@@ -113,6 +115,8 @@ export default function MetaAdsPage() {
   }, 0);
   const activeCampaigns = campaigns.filter(c => c.status?.toUpperCase() === 'ACTIVE').length;
 
+  const { c } = useTheme();
+
   if (loading || dataLoading) return (
     <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16, marginBottom: 20 }}>
@@ -179,11 +183,11 @@ export default function MetaAdsPage() {
       </div>
 
       {/* Campaigns table */}
-      <div style={{ backgroundColor: '#FFFFFF', borderRadius: 14, boxShadow: '0 1px 4px rgba(0,0,0,0.05), 0 0 0 1px rgba(0,0,0,0.03)', overflow: 'hidden', marginBottom: 20 }}>
-        <div style={{ padding: '18px 22px', borderBottom: '1px solid rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ backgroundColor: c.bgCard, borderRadius: 14, boxShadow: c.shadow, overflow: 'hidden', marginBottom: 20 }}>
+        <div style={{ padding: '18px 22px', borderBottom: `1px solid ${c.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <p style={{ fontSize: 11, fontWeight: 500, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Campaigns</p>
-            <p style={{ fontSize: 12, color: '#9ca3af', marginTop: 2 }}>{campaigns.length} campaigns · {activeCampaigns} active</p>
+            <p style={{ fontSize: 11, fontWeight: 500, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.04em' }}>Campaigns</p>
+            <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>{campaigns.length} campaigns · {activeCampaigns} active</p>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <span style={{ fontSize: 11, padding: '3px 9px', borderRadius: 5, backgroundColor: 'rgba(16,185,129,0.08)', color: '#10B981', fontWeight: 500 }}>{activeCampaigns} Active</span>
@@ -193,30 +197,30 @@ export default function MetaAdsPage() {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ backgroundColor: '#FAFAF9' }}>
+              <tr style={{ backgroundColor: c.bgCardHover }}>
                 {['Campaign', 'Status', 'Budget', 'Spend', 'Impressions', 'Clicks', 'CTR', 'CPC', 'ROAS'].map(h => (
-                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 500, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid rgba(0,0,0,0.05)', whiteSpace: 'nowrap' }}>{h}</th>
+                  <th key={h} style={{ padding: '10px 16px', textAlign: 'left', fontSize: 11, fontWeight: 500, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: `1px solid ${c.border}`, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {campaigns.map((c: any, i: number) => (
-                <tr key={i} style={{ borderBottom: i < campaigns.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}
-                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = '#FAFAF9'}
+              {campaigns.map((campaign: any, i: number) => (
+                <tr key={i} style={{ borderBottom: i < campaigns.length - 1 ? `1px solid ${c.borderSubtle}` : 'none' }}
+                  onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = c.bgCardHover}
                   onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = 'transparent'}
                 >
                   <td style={{ padding: '12px 16px', maxWidth: 240 }}>
-                    <div style={{ fontWeight: 500, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13 }}>{c.name}</div>
-                    {c.objective && <div style={{ fontSize: 11, color: '#9ca3af', marginTop: 1 }}>{c.objective.replace('OUTCOME_', '')}</div>}
+                    <div style={{ fontWeight: 500, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 13 }}>{campaign.name}</div>
+                    {campaign.objective && <div style={{ fontSize: 11, color: c.textMuted, marginTop: 1 }}>{campaign.objective.replace('OUTCOME_', '')}</div>}
                   </td>
-                  <td style={{ padding: '12px 16px' }}><StatusBadge status={c.status || 'UNKNOWN'} /></td>
-                  <td style={{ padding: '12px 16px', color: '#6b7280', fontSize: 13 }}>{c.budget || '—'}</td>
-                  <td style={{ padding: '12px 16px', fontWeight: 500, color: '#111827', fontSize: 13 }}>{c.spend || '$0'}</td>
-                  <td style={{ padding: '12px 16px', color: '#6b7280', fontSize: 13 }}>{c.impressions || '0'}</td>
-                  <td style={{ padding: '12px 16px', color: '#6b7280', fontSize: 13 }}>{c.clicks || '0'}</td>
-                  <td style={{ padding: '12px 16px', color: c.ctr && c.ctr !== '0%' ? '#10B981' : '#9ca3af', fontWeight: 500, fontSize: 13 }}>{c.ctr || '—'}</td>
-                  <td style={{ padding: '12px 16px', color: '#6b7280', fontSize: 13 }}>{c.cpc || '—'}</td>
-                  <td style={{ padding: '12px 16px', color: c.roas && c.roas !== '-' ? '#7C3AED' : '#9ca3af', fontWeight: 600, fontSize: 13 }}>{c.roas || '—'}</td>
+                  <td style={{ padding: '12px 16px' }}><StatusBadge status={campaign.status || 'UNKNOWN'} /></td>
+                  <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13 }}>{campaign.budget || '—'}</td>
+                  <td style={{ padding: '12px 16px', fontWeight: 500, color: c.text, fontSize: 13 }}>{campaign.spend || '$0'}</td>
+                  <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13 }}>{campaign.impressions || '0'}</td>
+                  <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13 }}>{campaign.clicks || '0'}</td>
+                  <td style={{ padding: '12px 16px', color: campaign.ctr && campaign.ctr !== '0%' ? '#10B981' : c.textMuted, fontWeight: 500, fontSize: 13 }}>{campaign.ctr || '—'}</td>
+                  <td style={{ padding: '12px 16px', color: c.textSecondary, fontSize: 13 }}>{campaign.cpc || '—'}</td>
+                  <td style={{ padding: '12px 16px', color: campaign.roas && campaign.roas !== '-' ? '#7C3AED' : c.textMuted, fontWeight: 600, fontSize: 13 }}>{campaign.roas || '—'}</td>
                 </tr>
               ))}
             </tbody>

@@ -67,7 +67,19 @@ export default function MetaAdsPage() {
     async function load() {
       setDataLoading(true);
       // Try campaigns first, fall back to adsets
-    const { data } = await supabase
+    // Try campaigns row first, fall back to adsets
+    let { data } = await supabase
+        .from('analytics_data')
+        .select('*')
+        .eq('workspace_id', workspace.id)
+        .eq('provider', 'meta_ads')
+        .eq('metric_type', 'campaigns')
+        .order('synced_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+    if (!data) {
+      // fallback to adsets
+      const fallback = await supabase
         .from('analytics_data')
         .select('*')
         .eq('workspace_id', workspace.id)
@@ -75,7 +87,9 @@ export default function MetaAdsPage() {
         .order('synced_at', { ascending: false })
         .limit(1)
         .maybeSingle();
-      if (data?.data && Array.isArray(data.data) && data.data.length > 0) setCampaigns(data.data);
+      data = fallback.data;
+    }
+    if (data?.data && Array.isArray(data.data) && data.data.length > 0) setCampaigns(data.data);
       setDataLoading(false);
     }
     load();
@@ -91,13 +105,24 @@ export default function MetaAdsPage() {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` },
         body: JSON.stringify({ integration_id: integration.id, workspace_id: workspace.id }),
       });
+      // Reload after sync
+      const { data } = await supabase
+        .from('analytics_data')
+        .select('*')
+        .eq('workspace_id', workspace.id)
+        .eq('provider', 'meta_ads')
+        .eq('metric_type', 'campaigns')
+        .order('synced_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.data && Array.isArray(data.data)) setCampaigns(data.data);
     } catch {}
     setSyncing(false);
   }
 
-  // Use real campaigns if available, otherwise demo data (when connected but no sync yet)
-  const displayCampaigns = campaigns.length > 0 ? campaigns : (isConnected ? DEMO_CAMPAIGNS : DEMO_CAMPAIGNS);
-  const isDemo = campaigns.length === 0;
+  // Use real data if loaded, demo only if nothing in DB yet
+  const displayCampaigns = campaigns.length > 0 ? campaigns : DEMO_CAMPAIGNS;
+  const isDemo = campaigns.length === 0 && !dataLoading;
 
   if (loading) return (
     <PageShell title="Meta Ads" description="Facebook & Instagram ad performance" icon={Target}>

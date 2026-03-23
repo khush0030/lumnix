@@ -101,34 +101,54 @@ export async function syncIntegration(integrationId: string, workspaceId: string
   return res.json();
 }
 
+export interface DateRangeParams {
+  days?: number;
+  startDate?: string; // YYYY-MM-DD
+  endDate?: string;   // YYYY-MM-DD
+}
+
 // Fetch GSC data
-export function useGSCData(workspaceId: string | undefined, type = "keywords", days = 28) {
+export function useGSCData(workspaceId: string | undefined, type = "keywords", daysOrRange: number | DateRangeParams = 28) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const rangeKey = typeof daysOrRange === 'number'
+    ? `days=${daysOrRange}`
+    : daysOrRange.startDate
+      ? `start_date=${daysOrRange.startDate}&end_date=${daysOrRange.endDate}`
+      : `days=${daysOrRange.days || 28}`;
+
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
-    fetch(`/api/data/gsc?workspace_id=${workspaceId}&type=${type}&days=${days}`)
+    setLoading(true);
+    fetch(`/api/data/gsc?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [workspaceId, type, days]);
+  }, [workspaceId, type, rangeKey]);
 
   return { data, loading };
 }
 
 // Fetch GA4 data
-export function useGA4Data(workspaceId: string | undefined, type = "overview", days = 30) {
+export function useGA4Data(workspaceId: string | undefined, type = "overview", daysOrRange: number | DateRangeParams = 30) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const rangeKey = typeof daysOrRange === 'number'
+    ? `days=${daysOrRange}`
+    : daysOrRange.startDate
+      ? `start_date=${daysOrRange.startDate}&end_date=${daysOrRange.endDate}`
+      : `days=${daysOrRange.days || 30}`;
+
   useEffect(() => {
     if (!workspaceId) { setLoading(false); return; }
-    fetch(`/api/data/ga4?workspace_id=${workspaceId}&type=${type}&days=${days}`)
+    setLoading(true);
+    fetch(`/api/data/ga4?workspace_id=${workspaceId}&type=${type}&${rangeKey}`)
       .then(r => r.json())
       .then(d => { setData(d); setLoading(false); })
       .catch(() => setLoading(false));
-  }, [workspaceId, type, days]);
+  }, [workspaceId, type, rangeKey]);
 
   return { data, loading };
 }

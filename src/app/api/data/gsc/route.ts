@@ -7,14 +7,21 @@ export async function GET(req: NextRequest) {
     const workspaceId = req.nextUrl.searchParams.get('workspace_id');
     const days = parseInt(req.nextUrl.searchParams.get('days') || '28');
     const type = req.nextUrl.searchParams.get('type') || 'keywords';
+    const customStart = req.nextUrl.searchParams.get('start_date');
+    const customEnd = req.nextUrl.searchParams.get('end_date');
 
     if (!workspaceId) {
       return NextResponse.json({ error: 'Missing workspace_id' }, { status: 400 });
     }
 
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    const startDateStr = startDate.toISOString().split('T')[0];
+    let startDateStr: string;
+    if (customStart) {
+      startDateStr = customStart;
+    } else {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      startDateStr = startDate.toISOString().split('T')[0];
+    }
 
     if (type === 'keywords') {
       // Top keywords with aggregate metrics

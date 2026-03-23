@@ -7,20 +7,31 @@ export async function GET(req: NextRequest) {
     const workspaceId = req.nextUrl.searchParams.get('workspace_id');
     const days = parseInt(req.nextUrl.searchParams.get('days') || '30');
     const type = req.nextUrl.searchParams.get('type') || 'overview';
+    const customStart = req.nextUrl.searchParams.get('start_date');
+    const customEnd = req.nextUrl.searchParams.get('end_date');
 
     if (!workspaceId) {
       return NextResponse.json({ error: 'Missing workspace_id' }, { status: 400 });
     }
 
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-    const startDateStr = startDate.toISOString().split('T')[0];
+    let startDateStr: string;
+    let endDateStr: string;
+    if (customStart && customEnd) {
+      startDateStr = customStart;
+      endDateStr = customEnd;
+    } else {
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - days);
+      startDateStr = startDate.toISOString().split('T')[0];
+      endDateStr = new Date().toISOString().split('T')[0];
+    }
 
     const { data: rawData } = await getSupabaseAdmin()
       .from('ga4_data')
       .select('*')
       .eq('workspace_id', workspaceId)
-      .gte('date', startDateStr);
+      .gte('date', startDateStr)
+      .lte('date', endDateStr);
 
     if (!rawData || rawData.length === 0) {
       return NextResponse.json({ data: [], message: 'No data yet. Sync your GA4 integration first.' });
@@ -28,6 +39,7 @@ export async function GET(req: NextRequest) {
 
     if (type === 'overview') {
       // Daily sessions, users, pageviews
+      // Primary: use 'total' dimension rows (from trafficOverview report)
       const dailyMap = new Map<string, { sessions: number; users: number; pageviews: number }>();
       for (const row of rawData) {
         if (row.dimension_name !== 'total' && row.dimension_name !== 'date') continue;
@@ -36,6 +48,18 @@ export async function GET(req: NextRequest) {
         if (row.metric_type === 'totalUsers') existing.users += row.value;
         if (row.metric_type === 'screenPageViews') existing.pageviews += row.value;
         dailyMap.set(row.date, existing);
+      }
+
+      // Fallback: if no 'total' rows, aggregate from sessionSource rows (sum per day across sources)
+      if (dailyMap.size === 0) {
+        for (const row of rawData) {
+          if (row.dimension_name !== 'sessionSource') continue;
+          const existing = dailyMap.get(row.date) || { sessions: 0, users: 0, pageviews: 0 };
+          if (row.metric_type === 'sessions') existing.sessions += row.value;
+          if (row.metric_type === 'totalUsers') existing.users += row.value;
+          if (row.metric_type === 'screenPageViews') existing.pageviews += row.value;
+          dailyMap.set(row.date, existing);
+        }
       }
 
       const overview = Array.from(dailyMap.entries())

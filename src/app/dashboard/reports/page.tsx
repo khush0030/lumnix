@@ -1,8 +1,17 @@
 'use client';
-import { useState } from 'react';
-import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles, Calendar, ChevronDown } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
-import { useWorkspace, useGSCData, useGA4Data } from '@/lib/hooks';
+import { useWorkspace, useGSCData, useGA4Data, DateRangeParams } from '@/lib/hooks';
+
+const DATE_PRESETS = [
+  { label: 'Last 7 days', days: 7 },
+  { label: 'Last 14 days', days: 14 },
+  { label: 'Last 30 days', days: 30 },
+  { label: 'Last 60 days', days: 60 },
+  { label: 'Last 90 days', days: 90 },
+  { label: 'Custom range', days: 0 },
+];
 
 
 const reportTypes = [
@@ -38,9 +47,9 @@ function getPeriodLabel(days: number) {
   return `${start.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`;
 }
 
-function buildSEOReport(gscKeywords: any[], workspace: any): string {
+function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string): string {
   const name = workspace?.name || 'Your Brand';
-  const period = getPeriodLabel(30);
+  const period = periodLabel || getPeriodLabel(30);
   const generated = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const totalClicks = gscKeywords.reduce((s: number, k: any) => s + (k.clicks || 0), 0);
@@ -219,10 +228,11 @@ function buildAnalyticsReport(
   overviewData: { date: string; sessions: number; users: number; pageviews: number }[],
   sourcesData: { source: string; sessions: number; users: number }[],
   pagesData: { page: string; pageviews: number; bounceRate: number }[],
-  workspace: any
+  workspace: any,
+  periodLabel?: string
 ): string {
   const name = workspace?.name || 'Your Brand';
-  const period = getPeriodLabel(30);
+  const period = periodLabel || getPeriodLabel(30);
   const generated = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   // Aggregate from overview rows
@@ -410,10 +420,11 @@ function buildFullReport(
   overviewData: { date: string; sessions: number; users: number; pageviews: number }[],
   sourcesData: { source: string; sessions: number; users: number }[],
   pagesData: { page: string; pageviews: number; bounceRate: number }[],
-  workspace: any
+  workspace: any,
+  periodLabel?: string
 ): string {
   const name = workspace?.name || 'Your Brand';
-  const period = getPeriodLabel(30);
+  const period = periodLabel || getPeriodLabel(30);
   const generated = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
   const totalClicks = gscKeywords.reduce((s: number, k: any) => s + (k.clicks || 0), 0);
@@ -729,20 +740,45 @@ async function downloadPDF(html: string, filename: string) {
 
 export default function ReportsPage() {
   const { workspace } = useWorkspace();
-  const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
-  const { data: ga4Overview, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
-  const { data: ga4Sources } = useGA4Data(workspace?.id, 'sources', 30);
-  const { data: ga4Pages } = useGA4Data(workspace?.id, 'pages', 30);
+
+  // Date range state
+  const [selectedPreset, setSelectedPreset] = useState(2); // default: Last 30 days
+  const [showPresetMenu, setShowPresetMenu] = useState(false);
+  const [customStart, setCustomStart] = useState('');
+  const [customEnd, setCustomEnd] = useState('');
+  const [showCustom, setShowCustom] = useState(false);
+
+  const dateRange = useMemo((): DateRangeParams => {
+    const preset = DATE_PRESETS[selectedPreset];
+    if (preset.days === 0 && customStart && customEnd) {
+      return { startDate: customStart, endDate: customEnd };
+    }
+    return { days: preset.days || 30 };
+  }, [selectedPreset, customStart, customEnd]);
+
+  const periodLabel = useMemo(() => {
+    if (dateRange.startDate && dateRange.endDate) {
+      const s = new Date(dateRange.startDate);
+      const e = new Date(dateRange.endDate);
+      return `${s.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} – ${e.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    }
+    const days = dateRange.days || 30;
+    const end = new Date();
+    const start = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+    return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} – ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  }, [dateRange]);
+
+  const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', dateRange);
+  const { data: ga4Overview, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', dateRange);
+  const { data: ga4Sources } = useGA4Data(workspace?.id, 'sources', dateRange);
+  const { data: ga4Pages } = useGA4Data(workspace?.id, 'pages', dateRange);
   const [generating, setGenerating] = useState<string | null>(null);
   const [generated, setGenerated] = useState<Set<string>>(new Set());
 
   const loading = gscLoading || ga4Loading;
   const gscKeywords = gscResp?.keywords || [];
-  // overview rows: [{date, sessions, users, pageviews}, ...]
   const overviewData: { date: string; sessions: number; users: number; pageviews: number }[] = ga4Overview?.data || [];
-  // sources rows: [{source, sessions, users}, ...]
   const sourcesData: { source: string; sessions: number; users: number }[] = ga4Sources?.data || [];
-  // pages rows: [{page, pageviews, bounceRate}, ...]
   const pagesData: { page: string; pageviews: number; bounceRate: number }[] = ga4Pages?.data || [];
   const hasGA4 = overviewData.length > 0 || sourcesData.length > 0;
   const hasData = gscKeywords.length > 0 || hasGA4;
@@ -758,13 +794,13 @@ export default function ReportsPage() {
     let filename = '';
 
     if (type === 'seo') {
-      html = buildSEOReport(gscKeywords, workspace);
+      html = buildSEOReport(gscKeywords, workspace, periodLabel);
       filename = `${clientName}-seo-report-${date}.html`;
     } else if (type === 'analytics') {
-      html = buildAnalyticsReport(overviewData, sourcesData, pagesData, workspace);
+      html = buildAnalyticsReport(overviewData, sourcesData, pagesData, workspace, periodLabel);
       filename = `${clientName}-analytics-report-${date}.html`;
     } else {
-      html = buildFullReport(gscKeywords, overviewData, sourcesData, pagesData, workspace);
+      html = buildFullReport(gscKeywords, overviewData, sourcesData, pagesData, workspace, periodLabel);
       filename = `${clientName}-full-marketing-report-${date}.html`;
     }
 
@@ -780,6 +816,83 @@ export default function ReportsPage() {
 
   return (
     <PageShell title="Reports" description="Client-ready marketing reports with real data and AI insights" icon={FileText} badge="Client-Ready">
+      {/* ── Date Range Picker ── */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#71717a', fontSize: 13, fontWeight: 600 }}>
+          <Calendar size={15} />
+          Reporting Period:
+        </div>
+        <div style={{ position: 'relative' }}>
+          <button
+            onClick={() => { setShowPresetMenu(p => !p); }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              padding: '8px 14px', borderRadius: 9,
+              backgroundColor: '#27272a', border: '1px solid #3f3f46',
+              color: '#f4f4f5', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+            }}
+          >
+            <span>{DATE_PRESETS[selectedPreset].days === 0 && customStart ? `${customStart} → ${customEnd}` : DATE_PRESETS[selectedPreset].label}</span>
+            <ChevronDown size={13} color="#71717a" />
+          </button>
+          {showPresetMenu && (
+            <div style={{
+              position: 'absolute', top: '110%', left: 0, zIndex: 50,
+              backgroundColor: '#1c1c1f', border: '1px solid #3f3f46',
+              borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+            }}>
+              {DATE_PRESETS.map((p, i) => (
+                <button key={i} onClick={() => {
+                  setSelectedPreset(i);
+                  setShowPresetMenu(false);
+                  if (p.days === 0) setShowCustom(true);
+                  else setShowCustom(false);
+                }} style={{
+                  display: 'block', width: '100%', textAlign: 'left',
+                  padding: '10px 16px', fontSize: 13, fontWeight: 500,
+                  color: selectedPreset === i ? '#7c3aed' : '#d4d4d8',
+                  backgroundColor: selectedPreset === i ? 'rgba(124,58,237,0.1)' : 'transparent',
+                  border: 'none', cursor: 'pointer',
+                }}>
+                  {p.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {showCustom && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input
+              type="date"
+              value={customStart}
+              onChange={e => setCustomStart(e.target.value)}
+              style={{
+                padding: '7px 10px', borderRadius: 8, border: '1px solid #3f3f46',
+                backgroundColor: '#27272a', color: '#f4f4f5', fontSize: 13,
+              }}
+            />
+            <span style={{ color: '#52525b', fontSize: 13 }}>→</span>
+            <input
+              type="date"
+              value={customEnd}
+              onChange={e => setCustomEnd(e.target.value)}
+              style={{
+                padding: '7px 10px', borderRadius: 8, border: '1px solid #3f3f46',
+                backgroundColor: '#27272a', color: '#f4f4f5', fontSize: 13,
+              }}
+            />
+          </div>
+        )}
+
+        {loading && <Loader2 size={14} color="#7c3aed" style={{ animation: 'spin 1s linear infinite' }} />}
+        {!loading && hasData && (
+          <span style={{ fontSize: 12, color: '#52525b' }}>
+            {periodLabel}
+          </span>
+        )}
+      </div>
+
       {!hasData && !loading && (
         <div style={{ padding: 32, borderRadius: 14, backgroundColor: '#18181b', border: '1px solid #27272a', textAlign: 'center', marginBottom: 24 }}>
           <FileText size={32} color="#334155" style={{ marginBottom: 12 }} />

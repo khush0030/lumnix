@@ -123,9 +123,13 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
         </button>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 10px' }}>
-          <div style={{ width: '26px', height: '26px', borderRadius: '7px', backgroundColor: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 600, color: accent, flexShrink: 0 }}>
-            {workspace?.name ? workspace.name[0].toUpperCase() : 'L'}
-          </div>
+          {workspace?.logo_url ? (
+            <img src={workspace.logo_url} alt="logo" style={{ width: '26px', height: '26px', borderRadius: '7px', objectFit: 'cover', flexShrink: 0 }} />
+          ) : (
+            <div style={{ width: '26px', height: '26px', borderRadius: '7px', backgroundColor: `${accent}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 600, color: accent, flexShrink: 0 }}>
+              {workspace?.name ? workspace.name[0].toUpperCase() : 'L'}
+            </div>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '12px', fontWeight: 500, color: c.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{workspace?.name || 'Workspace'}</div>
           </div>

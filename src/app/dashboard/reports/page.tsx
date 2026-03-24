@@ -132,7 +132,7 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
 <body>
 
 <div class="cover">
-  <div class="cover-brand"><div class="cover-dot"></div><span class="cover-lumnix">Lumnix · Marketing Intelligence</span></div>
+  <div class="cover-brand">${workspace?.logo_url ? `<img src="${workspace.logo_url}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;margin-right:4px;" />` : '<div class="cover-dot"></div>'}<span class="cover-lumnix">${name} · Marketing Report</span></div>
   <div>
     <div class="cover-title">SEO Performance Report<br>${name}</div>
     <div class="cover-sub">Search Visibility, Rankings & Organic Growth Analysis</div>
@@ -219,8 +219,8 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
 </div>
 
 <div class="footer">
-  <span class="footer-brand">Lumnix · Marketing Intelligence</span>
-  <span class="footer-note">Confidential · Prepared for ${name} · ${generated}</span>
+  <span class="footer-brand">${name}</span>
+  <span class="footer-note">Prepared for ${name} · ${generated} · Powered by Lumnix</span>
 </div>
 </body>
 </html>`;
@@ -320,7 +320,7 @@ function buildAnalyticsReport(
 <body>
 
 <div class="cover">
-  <div class="cover-brand"><div class="cover-dot"></div><span class="cover-lumnix">Lumnix · Marketing Intelligence</span></div>
+  <div class="cover-brand">${workspace?.logo_url ? `<img src="${workspace.logo_url}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;margin-right:4px;" />` : '<div class="cover-dot"></div>'}<span class="cover-lumnix">${name} · Marketing Report</span></div>
   <div>
     <div class="cover-title">Traffic & Analytics Report<br>${name}</div>
     <div class="cover-sub">Sessions, Users, Traffic Sources & Engagement Analysis</div>
@@ -410,8 +410,8 @@ function buildAnalyticsReport(
 </div>
 
 <div class="footer">
-  <span class="footer-brand">Lumnix · Marketing Intelligence</span>
-  <span class="footer-note">Confidential · Prepared for ${name} · ${generated}</span>
+  <span class="footer-brand">${name}</span>
+  <span class="footer-note">Prepared for ${name} · ${generated} · Powered by Lumnix</span>
 </div>
 </body>
 </html>`;
@@ -529,7 +529,7 @@ function buildFullReport(
 <body>
 
 <div class="cover">
-  <div class="cover-brand"><div class="cover-dot"></div><span class="cover-lumnix">Lumnix · Marketing Intelligence</span></div>
+  <div class="cover-brand">${workspace?.logo_url ? `<img src="${workspace.logo_url}" style="width:32px;height:32px;border-radius:8px;object-fit:cover;margin-right:4px;" />` : '<div class="cover-dot"></div>'}<span class="cover-lumnix">${name} · Marketing Report</span></div>
   <div>
     <div class="cover-title">Full Marketing Intelligence Report</div>
     <div class="cover-client">${name}</div>
@@ -694,8 +694,8 @@ function buildFullReport(
 </div>
 
 <div class="footer">
-  <span class="footer-brand">Lumnix · Marketing Intelligence</span>
-  <span class="footer-note">Confidential · Prepared for ${name} · ${generated}</span>
+  <span class="footer-brand">${name}</span>
+  <span class="footer-note">Prepared for ${name} · ${generated} · Powered by Lumnix</span>
 </div>
 </body>
 </html>`;

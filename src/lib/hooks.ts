@@ -6,6 +6,7 @@ import { supabase } from "./supabase";
 export function useWorkspace() {
   const [workspace, setWorkspace] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     async function load() {
@@ -24,9 +25,11 @@ export function useWorkspace() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [tick]);
 
-  return { workspace, loading };
+  const refetch = () => setTick(t => t + 1);
+
+  return { workspace, loading, refetch };
 }
 
 // Get integrations for workspace

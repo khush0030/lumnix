@@ -22,10 +22,18 @@ function NotificationsTab() {
     { id: "weekly", label: "Weekly Digest", desc: "A weekly summary of your marketing performance" },
     { id: "monthly", label: "Monthly Report", desc: "Full monthly marketing report delivered to your inbox" },
   ];
-  const [toggles, setToggles] = useState<Record<string, boolean>>({ traffic: true, ads: true, weekly: true, monthly: false });
+    const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
+    try {
+      if (typeof window === 'undefined') return { traffic: true, ads: true, weekly: true, monthly: false };
+      const s = localStorage.getItem('lumnix-notif-prefs');
+      if (s) return JSON.parse(s);
+    } catch {}
+    return { traffic: true, ads: true, weekly: true, monthly: false };
+  });
   const [saved, setSaved] = useState(false);
 
   function save() {
+    try { localStorage.setItem('lumnix-notif-prefs', JSON.stringify(toggles)); } catch {}
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -55,7 +63,7 @@ function NotificationsTab() {
   );
 }
 
-function BrandTab({ workspace }: { workspace: any }) {
+function BrandTab({ workspace, onSaved }: { workspace: any; onSaved?: () => void }) {
   const { c } = useTheme();
   const [brandName, setBrandName] = useState(workspace?.name || '');
   const [brandColor, setBrandColor] = useState(workspace?.brand_color || '#7c3aed');
@@ -112,6 +120,7 @@ function BrandTab({ workspace }: { workspace: any }) {
       if (res.ok) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+        onSaved?.();
         document.documentElement.style.setProperty('--accent', brandColor);
       } else {
         setError('Failed to save brand settings');
@@ -226,10 +235,90 @@ const tabs = [
   { id: "security", label: "Security", icon: Shield },
 ];
 
+function ProfileTab() {
+  const { c } = useTheme();
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [company, setCompany] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function load() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      setEmail(session.user.email || '');
+      const res = await fetch('/api/profile', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setFullName(data.profile?.full_name || session.user.user_metadata?.full_name || '');
+        setCompany(data.profile?.company || session.user.user_metadata?.company || '');
+      }
+    }
+    load();
+  }, []);
+
+  async function handleSave() {
+    setSaving(true);
+    setError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      const res = await fetch('/api/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ full_name: fullName, company }),
+      });
+      if (res.ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+      } else {
+        setError('Failed to save profile');
+      }
+    } catch {
+      setError('Failed to save profile');
+    }
+    setSaving(false);
+  }
+
+  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '10px', border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const };
+
+  return (
+    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: '16px', padding: '24px', maxWidth: '500px' }}>
+      <h3 style={{ fontSize: '16px', fontWeight: 700, color: c.text, marginBottom: '20px' }}>Profile Settings</h3>
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '6px' }}>Full Name</label>
+        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={inputStyle} />
+      </div>
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '6px' }}>Email</label>
+        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed' }} />
+        <p style={{ fontSize: '11px', color: c.textMuted, marginTop: '4px' }}>Email cannot be changed here</p>
+      </div>
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '6px' }}>Company</label>
+        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" style={inputStyle} />
+      </div>
+      {error && <p style={{ fontSize: '13px', color: '#ef4444', marginBottom: '12px' }}>{error}</p>}
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        style={{ padding: '10px 24px', borderRadius: '10px', background: saved ? '#22c55e' : 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: '14px', fontWeight: 600, border: 'none', cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.7 : 1 }}
+      >
+        {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={16} /> : null}
+        {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
+      </button>
+    </div>
+  );
+}
+
 export default function SettingsPage() {
   const { c } = useTheme();
   const [activeTab, setActiveTab] = useState("integrations");
-  const { workspace, loading: wsLoading } = useWorkspace();
+  const { workspace, loading: wsLoading, refetch: refetchWorkspace } = useWorkspace();
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
   const [syncing, setSyncing] = useState<string | null>(null);
 
@@ -515,25 +604,14 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === "brand" && <BrandTab workspace={workspace} />}
+      {activeTab === "brand" && <BrandTab workspace={workspace} onSaved={refetchWorkspace} />}
 
-      {activeTab === "profile" && (
-        <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: "16px", padding: "24px", maxWidth: "500px" }}>
-          <h3 style={{ fontSize: "16px", fontWeight: 700, color: c.text, marginBottom: "20px" }}>Profile Settings</h3>
-          {["Full Name", "Email", "Company"].map(field => (
-            <div key={field} style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: c.textSecondary, marginBottom: "6px" }}>{field}</label>
-              <input placeholder={field} style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: "white", fontSize: "14px", outline: "none", boxSizing: "border-box" }} />
-            </div>
-          ))}
-          <button style={{ padding: "10px 24px", borderRadius: "10px", background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "white", fontSize: "14px", fontWeight: 600, border: "none", cursor: "pointer" }}>Save Changes</button>
-        </div>
-      )}
+      {activeTab === "profile" && <ProfileTab />}
 
       {activeTab === "notifications" && <NotificationsTab />}
 
       {activeTab !== "integrations" && activeTab !== "brand" && activeTab !== "profile" && activeTab !== "notifications" && (
-        <div style={{ textAlign: "center", padding: "60px 20px", borderRadius: "16px", border: "1px dashed #27272a" }}>
+        <div style={{ textAlign: "center", padding: "60px 20px", borderRadius: "16px", border: `1px dashed ${c.border}` }}>
           <p style={{ fontSize: "15px", color: c.textMuted }}>Coming soon — {activeTab} settings</p>
         </div>
       )}

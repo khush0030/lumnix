@@ -133,24 +133,24 @@ function BrandTab({ workspace, onSaved }: { workspace: any; onSaved?: () => void
 
   return (
     <div style={{ maxWidth: '560px' }}>
-      <div style={{ backgroundColor: '#18181b', border: '1px solid #27272a', borderRadius: '16px', padding: '24px', marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 700, color: '#f4f4f5', marginBottom: '20px' }}>Brand Identity</h3>
+      <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: '16px', padding: '24px', marginBottom: '20px' }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 700, color: c.text, marginBottom: '20px' }}>Brand Identity</h3>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px' }}>Brand Name</label>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '8px' }}>Brand Name</label>
           <input
             type="text"
             value={brandName}
             onChange={e => setBrandName(e.target.value)}
             placeholder="e.g. Acme Corp"
-            style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: '1px solid #3f3f46', backgroundColor: '#27272a', color: 'white', fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
           />
         </div>
 
         <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#a1a1aa', marginBottom: '8px' }}>Logo</label>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '8px' }}>Logo</label>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '12px', backgroundColor: '#27272a', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, border: '1px solid #3f3f46' }}>
+            <div style={{ width: '60px', height: '60px', borderRadius: '12px', backgroundColor: c.bgInput, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, border: `1px solid ${c.border}` }}>
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
@@ -161,19 +161,19 @@ function BrandTab({ workspace, onSaved }: { workspace: any; onSaved?: () => void
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', border: '1px solid #3f3f46', backgroundColor: '#27272a', color: '#d4d4d8', fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.textSecondary, fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
               >
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {uploading ? 'Uploading...' : 'Upload Logo'}
               </button>
-              <div style={{ fontSize: '11px', color: '#52525b', marginTop: '4px' }}>PNG, JPG up to 2MB</div>
+              <div style={{ fontSize: '11px', color: c.textMuted, marginTop: '4px' }}>PNG, JPG up to 2MB</div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
             </div>
           </div>
         </div>
 
         <div>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#a1a1aa', marginBottom: '10px' }}>Brand Color</label>
+          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '10px' }}>Brand Color</label>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
             {BRAND_COLORS.map(c => (
               <button
@@ -195,7 +195,7 @@ function BrandTab({ workspace, onSaved }: { workspace: any; onSaved?: () => void
           </div>
           <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '20px', height: '20px', borderRadius: '6px', backgroundColor: brandColor }} />
-            <span style={{ fontSize: '13px', color: '#71717a' }}>{brandColor}</span>
+            <span style={{ fontSize: '13px', color: c.textSecondary }}>{brandColor}</span>
           </div>
         </div>
       </div>
@@ -474,7 +474,7 @@ export default function SettingsPage() {
               const int = getIntegration(p.id);
               const isSyncing = syncing === p.id;
               return (
-                <div key={p.id} style={{ backgroundColor: c.bgCard, border: `1px solid ${connected ? "rgba(16,185,129,0.3)" : c.bgInput}`, borderRadius: "16px", padding: "24px" }}>
+                <div key={p.id} style={{ backgroundColor: c.bgCard, border: `1px solid ${connected ? 'rgba(16,185,129,0.3)' : c.border}`, borderRadius: "16px", padding: "24px" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                       <div style={{ width: "48px", height: "48px", borderRadius: "14px", backgroundColor: `${p.color}12`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
@@ -552,7 +552,7 @@ export default function SettingsPage() {
                   placeholder="colleague@company.com"
                   required
                   disabled={teamData?.canInviteMore === false}
-                  style={{ width: "100%", padding: "10px 14px 10px 36px", borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: c.bgPage, color: "#f8fafc", fontSize: 14, outline: "none", boxSizing: "border-box", opacity: teamData?.canInviteMore === false ? 0.5 : 1 }}
+                  style={{ width: "100%", padding: "10px 14px 10px 36px", borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 14, outline: "none", boxSizing: "border-box", opacity: teamData?.canInviteMore === false ? 0.5 : 1 }}
                   onFocus={e => (e.target as HTMLInputElement).style.borderColor = "#7c3aed"}
                   onBlur={e => (e.target as HTMLInputElement).style.borderColor = "#334155"}
                 />

@@ -673,6 +673,11 @@ export default function SettingsPage() {
                       </button>
                     )}
                   </div>
+                  {p.id === 'meta_ads' && (
+                    <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', fontSize: '12px', color: '#60a5fa', lineHeight: 1.5 }}>
+                      ℹ️ After connecting, you also need to accept the <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>Meta Ad Library Terms of Service</a> to use the Competitor Ad Spy feature.
+                    </div>
+                  )}
                 </div>
               );
             })}

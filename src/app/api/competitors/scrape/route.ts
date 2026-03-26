@@ -69,6 +69,10 @@ export async function POST(req: NextRequest) {
 
       if (json.error) {
         console.error('Meta API error:', json.error);
+        if (json.error.code === 200 || json.error.type === 'OAuthException') {
+          await supabase.from('competitor_brands').update({ scrape_status: 'error' }).eq('id', competitor_id);
+          return NextResponse.json({ error: 'Please accept the Meta Ad Library Terms of Service at facebook.com/ads/library/api/', adsFound: 0, needsToS: true });
+        }
         break;
       }
 

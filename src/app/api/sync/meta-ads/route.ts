@@ -147,6 +147,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, campaigns_synced: campaigns.length, account: account.name, currency });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message || 'Sync failed' }, { status: 500 });
+    const msg = error.message || 'Sync failed';
+    if (msg.includes('OAuthException') || msg.includes('permission') || msg.includes('token') || msg.includes('Session has expired') || msg.includes('Error validating access token')) {
+      return NextResponse.json({ error: 'Meta token expired or missing permissions. Please reconnect Meta Ads in Settings.' }, { status: 401 });
+    }
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

@@ -55,7 +55,12 @@ export default function CompetitorsPage() {
 
   // Scrape state
   const [scrapingId, setScrapingId] = useState<string | null>(null);
-  const [scrapeMsg, setScrapeMsg] = useState<Record<string, string>>({});
+  const [scrapeMsg, setScrapeMsg] = useState<Record<string, { text: string; needsToken?: boolean; needsToS?: boolean }>>({});
+
+  // Dismissable info card
+  const [infoDismissed, setInfoDismissed] = useState(() => {
+    try { return localStorage.getItem('lumnix-adspy-info-dismissed') === '1'; } catch { return false; }
+  });
 
   // Ads tab
   const [ads, setAds] = useState<any[]>([]);
@@ -156,7 +161,7 @@ export default function CompetitorsPage() {
   async function handleScrape(competitorId: string) {
     if (!workspaceId) return;
     setScrapingId(competitorId);
-    setScrapeMsg(prev => ({ ...prev, [competitorId]: '' }));
+    setScrapeMsg(prev => ({ ...prev, [competitorId]: { text: '' } }));
     try {
       const res = await fetch('/api/competitors/scrape', {
         method: 'POST',
@@ -165,11 +170,15 @@ export default function CompetitorsPage() {
       });
       const data = await res.json();
       if (data.needsToken) {
-        setScrapeMsg(prev => ({ ...prev, [competitorId]: '⚠️ Meta token needed' }));
+        setScrapeMsg(prev => ({ ...prev, [competitorId]: { text: '⚠️ Meta token needed', needsToken: true } }));
+      } else if (data.needsToS) {
+        setScrapeMsg(prev => ({ ...prev, [competitorId]: { text: data.error, needsToS: true } }));
       } else if (data.error) {
-        setScrapeMsg(prev => ({ ...prev, [competitorId]: `Error: ${data.error}` }));
+        setScrapeMsg(prev => ({ ...prev, [competitorId]: { text: `Error: ${data.error}` } }));
+      } else if (data.adsFound === 0 && !data.error) {
+        setScrapeMsg(prev => ({ ...prev, [competitorId]: { text: 'No ads found. Try a different Facebook page name, or this brand may not be running Meta ads.' } }));
       } else {
-        setScrapeMsg(prev => ({ ...prev, [competitorId]: `✓ ${data.adsFound} ads (${data.newAds} new)` }));
+        setScrapeMsg(prev => ({ ...prev, [competitorId]: { text: `✓ ${data.adsFound} ads (${data.newAds} new)` } }));
         refetchCompetitors();
         if (competitorId === selectedId) {
           setLoadingAds(true);
@@ -179,7 +188,7 @@ export default function CompetitorsPage() {
             .catch(() => setLoadingAds(false));
         }
       }
-    } catch { setScrapeMsg(prev => ({ ...prev, [competitorId]: 'Error scraping' })); }
+    } catch { setScrapeMsg(prev => ({ ...prev, [competitorId]: { text: 'Error scraping' } })); }
     setScrapingId(null);
   }
 
@@ -244,6 +253,20 @@ export default function CompetitorsPage() {
 
   return (
     <PageShell title="Competitor Ad Spy" description="Track what your competitors are running" icon={Eye} badge="AD LIBRARY">
+      {!infoDismissed && (
+        <div style={{ marginBottom: '20px', padding: '16px 20px', borderRadius: '12px', backgroundColor: 'rgba(124,58,237,0.06)', border: '1px solid rgba(124,58,237,0.2)', position: 'relative' }}>
+          <button onClick={() => { setInfoDismissed(true); try { localStorage.setItem('lumnix-adspy-info-dismissed', '1'); } catch {} }} style={{ position: 'absolute', top: '12px', right: '12px', background: 'none', border: 'none', cursor: 'pointer', color: c.textMuted, padding: '2px' }}>
+            <X size={14} />
+          </button>
+          <div style={{ fontSize: '14px', fontWeight: 700, color: c.text, marginBottom: '6px' }}>Competitor Ad Spy</div>
+          <p style={{ margin: '0 0 6px', fontSize: '13px', color: c.textSecondary, lineHeight: 1.5 }}>
+            Pulls ads from the Meta Ad Library to show you what competitors are running.
+          </p>
+          <p style={{ margin: 0, fontSize: '12px', color: c.textMuted, lineHeight: 1.5 }}>
+            Requirements: META_ACCESS_TOKEN env var + <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#a78bfa', textDecoration: 'underline' }}>Meta Ad Library ToS</a> accepted
+          </p>
+        </div>
+      )}
       <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
 
         {/* LEFT SIDEBAR */}
@@ -265,8 +288,9 @@ export default function CompetitorsPage() {
                   <input value={formName} onChange={e => setFormName(e.target.value)} placeholder="e.g. Nike" style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: `1px solid ${c.border}`, backgroundColor: c.bgPage, color: c.text, fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '11px', color: c.textSecondary, marginBottom: '4px' }}>Search Term *</label>
-                  <input value={formPage} onChange={e => setFormPage(e.target.value)} placeholder="e.g. Nike" style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #7c3aed', backgroundColor: c.bgPage, color: c.text, fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                  <label style={{ display: 'block', fontSize: '11px', color: c.textSecondary, marginBottom: '4px' }}>Facebook Page Name *</label>
+                  <input value={formPage} onChange={e => setFormPage(e.target.value)} placeholder="Exact name as on Facebook (e.g. Nike)" style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #7c3aed', backgroundColor: c.bgPage, color: c.text, fontSize: '13px', outline: 'none', boxSizing: 'border-box' }} />
+                  <p style={{ margin: '4px 0 0', fontSize: '10px', color: c.textMuted }}>Used to find the brand in Meta Ad Library</p>
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '11px', color: c.textSecondary, marginBottom: '4px' }}>Domain (optional)</label>
@@ -309,7 +333,25 @@ export default function CompetitorsPage() {
                     {scrapingId === c.id ? 'Scraping...' : 'Scrape'}
                   </button>
                 </div>
-                {scrapeMsg[c.id] && <p style={{ margin: '6px 0 0', fontSize: '11px', color: scrapeMsg[c.id].startsWith('✓') ? '#4ade80' : '#f87171' }}>{scrapeMsg[c.id]}</p>}
+                {scrapeMsg[c.id]?.text && (
+                  scrapeMsg[c.id].needsToken ? (
+                    <div style={{ margin: '8px 0 0', padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', fontSize: '12px', color: '#fbbf24', lineHeight: 1.6 }}>
+                      <div style={{ fontWeight: 700, marginBottom: '4px' }}>⚠️ Meta Access Token Required</div>
+                      <div style={{ color: '#d4d4d8' }}>To use Competitor Ad Spy, you need a Meta access token configured.</div>
+                      <ol style={{ margin: '6px 0 0', paddingLeft: '16px', color: '#a1a1aa' }}>
+                        <li>Go to developers.facebook.com → your app → Tools → Graph API Explorer</li>
+                        <li>Generate a long-lived user token with ads_read permission</li>
+                        <li>Add it as META_ACCESS_TOKEN in your Vercel environment variables</li>
+                      </ol>
+                    </div>
+                  ) : scrapeMsg[c.id].needsToS ? (
+                    <div style={{ margin: '8px 0 0', padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', fontSize: '12px', color: '#fbbf24', lineHeight: 1.5 }}>
+                      ⚠️ Please accept the Meta Ad Library Terms of Service: <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>facebook.com/ads/library/api/</a>
+                    </div>
+                  ) : (
+                    <p style={{ margin: '6px 0 0', fontSize: '11px', color: scrapeMsg[c.id].text.startsWith('✓') ? '#4ade80' : '#f87171' }}>{scrapeMsg[c.id].text}</p>
+                  )
+                )}
               </div>
             ))}
           </div>

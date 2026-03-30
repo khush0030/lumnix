@@ -1,6 +1,6 @@
 'use client';
-import { useState, useMemo } from 'react';
-import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles, Calendar, ChevronDown } from 'lucide-react';
+import { useState, useMemo, useCallback } from 'react';
+import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles, Calendar, ChevronDown, FileOutput } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useGSCData, useGA4Data, DateRangeParams } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
@@ -781,6 +781,126 @@ async function downloadPDF(html: string, filename: string) {
   });
 }
 
+const pdfSections = [
+  { id: 'overview', label: 'Overview', desc: 'Traffic KPIs and summary' },
+  { id: 'ga4', label: 'GA4 Traffic', desc: 'Sources, pages, sessions' },
+  { id: 'gsc', label: 'GSC Keywords', desc: 'Rankings, clicks, CTR' },
+  { id: 'insights', label: 'AI Insights', desc: 'Wins, warnings, opportunities' },
+];
+
+function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace: any; days: number; periodLabel: string; hasData: boolean }) {
+  const { c } = useTheme();
+  const [selected, setSelected] = useState<Set<string>>(new Set(['overview', 'ga4', 'gsc', 'insights']));
+  const [generating, setGenerating] = useState(false);
+
+  const toggle = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const handleGeneratePDF = useCallback(async () => {
+    if (selected.size === 0 || !workspace?.id) return;
+    setGenerating(true);
+
+    try {
+      const { data: { session } } = await (await import('@/lib/supabase')).supabase.auth.getSession();
+      if (!session) { setGenerating(false); return; }
+
+      // Fetch report data from API
+      const res = await fetch('/api/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        body: JSON.stringify({ workspace_id: workspace.id, sections: Array.from(selected), days }),
+      });
+      const reportData = await res.json();
+
+      // Dynamic import to avoid SSR issues
+      const pdfRenderer = await import('@react-pdf/renderer');
+      const { ReportPDF } = await import('@/components/reports/ReportPDF');
+      const React = await import('react');
+
+      const element = React.createElement(ReportPDF, {
+        data: { ...reportData, selectedSections: Array.from(selected), dateRange: periodLabel },
+      });
+      const blob = await (pdfRenderer.pdf as any)(element).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${workspace.name || 'report'}-marketing-report-${new Date().toISOString().slice(0, 10)}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('PDF generation failed:', e);
+    }
+
+    setGenerating(false);
+  }, [selected, workspace, days, periodLabel]);
+
+  return (
+    <div style={{ marginTop: 24, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 16, padding: 24 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <FileOutput size={22} color="#7c3aed" />
+        </div>
+        <div>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 2 }}>Custom PDF Report</h3>
+          <p style={{ fontSize: 12, color: c.textMuted, margin: 0 }}>Select sections and generate a branded PDF report</p>
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 18 }}>
+        {pdfSections.map(s => (
+          <button
+            key={s.id}
+            onClick={() => toggle(s.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '12px 14px', borderRadius: 10,
+              border: `1px solid ${selected.has(s.id) ? '#7c3aed' : c.border}`,
+              backgroundColor: selected.has(s.id) ? 'rgba(124,58,237,0.08)' : 'transparent',
+              cursor: 'pointer', textAlign: 'left',
+            }}
+          >
+            <div style={{
+              width: 18, height: 18, borderRadius: 5,
+              border: `2px solid ${selected.has(s.id) ? '#7c3aed' : c.border}`,
+              backgroundColor: selected.has(s.id) ? '#7c3aed' : 'transparent',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              {selected.has(s.id) && <CheckCircle2 size={12} color="white" />}
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{s.label}</div>
+              <div style={{ fontSize: 11, color: c.textMuted }}>{s.desc}</div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={handleGeneratePDF}
+        disabled={generating || selected.size === 0 || !hasData}
+        style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          width: '100%', padding: 12, borderRadius: 10, border: 'none',
+          background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
+          color: 'white', fontSize: 14, fontWeight: 700,
+          cursor: (generating || selected.size === 0 || !hasData) ? 'not-allowed' : 'pointer',
+          opacity: (selected.size === 0 || !hasData) ? 0.4 : 1,
+        }}
+      >
+        {generating ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={15} />}
+        {generating ? 'Generating PDF...' : `Generate PDF (${selected.size} section${selected.size !== 1 ? 's' : ''})`}
+      </button>
+    </div>
+  );
+}
+
 export default function ReportsPage() {
   const { workspace } = useWorkspaceCtx();
   const { c } = useTheme();
@@ -1014,8 +1134,11 @@ export default function ReportsPage() {
         })}
       </div>
 
+      {/* Custom PDF Builder */}
+      <CustomPDFBuilder workspace={workspace} days={dateRange.days || 30} periodLabel={periodLabel} hasData={hasData} />
+
       <div style={{ marginTop: 20, padding: '14px 18px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, fontSize: 12, color: c.textSecondary, lineHeight: 1.6 }}>
-        💡 <strong style={{ color: c.textSecondary }}>How to send to a client:</strong> Click "Open & Print PDF" → the report opens in a new tab → press Cmd/Ctrl+P → select "Save as PDF" → send the PDF. Reports include your brand name, reporting period, and all data with AI recommendations.
+        💡 <strong style={{ color: c.textSecondary }}>How to send to a client:</strong> Click "Open & Print PDF" → the report opens in a new tab → press Cmd/Ctrl+P → select "Save as PDF" → send the PDF. Or use the Custom PDF Builder below to generate a React PDF with selected sections.
       </div>
     </PageShell>
   );

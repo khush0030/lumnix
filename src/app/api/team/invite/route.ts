@@ -26,8 +26,9 @@ export async function POST(req: NextRequest) {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-    const { email, workspace_id } = await req.json();
+    const { email, workspace_id, role } = await req.json();
     if (!email || !workspace_id) return NextResponse.json({ error: 'Missing email or workspace_id' }, { status: 400 });
+    const memberRole = ['admin', 'member', 'viewer'].includes(role) ? role : 'member';
 
     const db = getSupabaseAdmin();
 
@@ -59,6 +60,7 @@ export async function POST(req: NextRequest) {
       email: email.toLowerCase(),
       invited_by: user.id,
       token,
+      role: memberRole,
       status: 'pending',
       expires_at: expiresAt,
     }, { onConflict: 'workspace_id,email' });

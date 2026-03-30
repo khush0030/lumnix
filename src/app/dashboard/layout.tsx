@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Search, BarChart3, DollarSign,
   Target, Brain, Eye, FileText, Bell, Settings,
-  Menu, X, LogOut, ChevronDown, Plus, Sun, Moon
+  Menu, X, LogOut, ChevronDown, Plus, Sun, Moon, GitBranch
 } from 'lucide-react';
 import { WorkspaceProvider, useWorkspaceCtx } from '@/lib/workspace-context';
 import { ThemeProvider, useTheme } from '@/lib/theme';
@@ -17,6 +17,7 @@ const navItems = [
   { href: '/dashboard/meta-ads', label: 'Meta Ads', icon: Target },
   { href: '/dashboard/ai', label: 'AI Assistant', icon: Brain },
   { href: '/dashboard/competitors', label: 'Competitor Spy', icon: Eye, accent: '#BE123C' },
+  { href: '/dashboard/attribution', label: 'Attribution', icon: GitBranch },
   { href: '/dashboard/reports', label: 'Reports', icon: FileText },
   { href: '/dashboard/alerts', label: 'Alerts', icon: Bell },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings },

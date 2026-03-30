@@ -1,6 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { Search, BarChart3, Target, Share2, Check, X, Plug, User, Bell, Shield, CreditCard, RefreshCw, Loader2, Palette, Upload, Users, Mail, Crown } from "lucide-react";
+import { Search, BarChart3, Target, Share2, Check, X, Plug, User, Bell, Shield, CreditCard, RefreshCw, Loader2, Palette, Upload, Users, Mail, Crown, Plus, Trash2, AlertTriangle } from "lucide-react";
 import { useIntegrations, connectIntegration, syncIntegration } from "@/lib/hooks";
 import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
@@ -240,12 +240,217 @@ const providers = [
 const tabs = [
   { id: "integrations", label: "Integrations", icon: Plug },
   { id: "team", label: "Team", icon: Users },
+  { id: "alerts", label: "Alerts", icon: AlertTriangle },
   { id: "brand", label: "Brand", icon: Palette },
   { id: "profile", label: "Profile", icon: User },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "security", label: "Security", icon: Shield },
 ];
+
+const ALERT_METRICS = [
+  { value: 'gsc_clicks', label: 'GSC Clicks (30d total)' },
+  { value: 'gsc_impressions', label: 'GSC Impressions (30d total)' },
+  { value: 'gsc_avg_position', label: 'GSC Avg Position' },
+  { value: 'ga4_sessions', label: 'GA4 Sessions (30d total)' },
+  { value: 'ga4_users', label: 'GA4 Users (30d total)' },
+  { value: 'google_ads_spend', label: 'Google Ads Spend' },
+  { value: 'google_ads_clicks', label: 'Google Ads Clicks' },
+  { value: 'meta_ads_spend', label: 'Meta Ads Spend' },
+  { value: 'meta_ads_roas', label: 'Meta Ads ROAS' },
+];
+
+function AlertsTab({ workspaceId }: { workspaceId: string }) {
+  const { c } = useTheme();
+  const [rules, setRules] = useState<any[]>([]);
+  const [history, setHistory] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showForm, setShowForm] = useState(false);
+  const [metric, setMetric] = useState('ga4_sessions');
+  const [comparison, setComparison] = useState('below');
+  const [threshold, setThreshold] = useState('');
+  const [email, setEmail] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  async function loadAlerts() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const res = await fetch(`/api/alerts?workspace_id=${workspaceId}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const data = await res.json();
+    setRules(data.rules || []);
+    setHistory(data.history || []);
+    setLoading(false);
+  }
+
+  useEffect(() => { if (workspaceId) loadAlerts(); }, [workspaceId]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!threshold || !email) return;
+    setSaving(true);
+    setError('');
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setSaving(false); return; }
+    const res = await fetch('/api/alerts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ workspace_id: workspaceId, metric, threshold: Number(threshold), comparison, recipient_email: email }),
+    });
+    const data = await res.json();
+    if (data.success) {
+      setShowForm(false);
+      setThreshold('');
+      loadAlerts();
+    } else {
+      setError(data.error || 'Failed to create alert');
+    }
+    setSaving(false);
+  }
+
+  async function handleToggle(ruleId: string, isActive: boolean) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    await fetch('/api/alerts', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ rule_id: ruleId, is_active: !isActive }),
+    });
+    loadAlerts();
+  }
+
+  async function handleDelete(ruleId: string) {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    await fetch(`/api/alerts?rule_id=${ruleId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    loadAlerts();
+  }
+
+  const inputStyle = { width: '100%', padding: '10px 12px', borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 13, outline: 'none', boxSizing: 'border-box' as const };
+
+  return (
+    <div style={{ maxWidth: 640 }}>
+      {/* Header + Add button */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+        <div>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 4 }}>Alert Rules</h3>
+          <p style={{ fontSize: 13, color: c.textSecondary, margin: 0 }}>Get notified when metrics cross your thresholds. Checked every hour.</p>
+        </div>
+        <button
+          onClick={() => setShowForm(f => !f)}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+        >
+          <Plus size={14} /> Add Alert
+        </button>
+      </div>
+
+      {/* Add alert form */}
+      {showForm && (
+        <form onSubmit={handleCreate} style={{ padding: 20, borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, marginBottom: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Metric</label>
+              <select value={metric} onChange={e => setMetric(e.target.value)} style={inputStyle}>
+                {ALERT_METRICS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Condition</label>
+              <select value={comparison} onChange={e => setComparison(e.target.value)} style={inputStyle}>
+                <option value="above">Goes above</option>
+                <option value="below">Drops below</option>
+                <option value="equals">Equals</option>
+              </select>
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Threshold</label>
+              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="e.g. 1000" required style={inputStyle} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Notify Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required style={inputStyle} />
+            </div>
+          </div>
+          {error && <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 12 }}>{error}</p>}
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button type="submit" disabled={saving} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+              {saving ? 'Creating...' : 'Create Alert'}
+            </button>
+            <button type="button" onClick={() => setShowForm(false)} style={{ padding: '10px 20px', borderRadius: 8, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 13, cursor: 'pointer' }}>
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Rules list */}
+      {loading ? (
+        <div style={{ padding: 40, textAlign: 'center' }}>
+          <Loader2 size={20} color="#7c3aed" style={{ animation: 'spin 1s linear infinite' }} />
+        </div>
+      ) : rules.length === 0 ? (
+        <div style={{ padding: 40, textAlign: 'center', borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}>
+          <AlertTriangle size={28} color={c.textMuted} style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 4 }}>No alert rules yet</p>
+          <p style={{ fontSize: 12, color: c.textMuted }}>Click "Add Alert" to create your first rule</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          {rules.map((rule: any) => {
+            const metricLabel = ALERT_METRICS.find(m => m.value === rule.metric)?.label || rule.metric;
+            return (
+              <div key={rule.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${rule.is_active ? 'rgba(124,58,237,0.2)' : c.border}`, opacity: rule.is_active ? 1 : 0.6 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: c.text, marginBottom: 4 }}>{metricLabel}</div>
+                  <div style={{ fontSize: 12, color: c.textSecondary }}>
+                    {rule.comparison === 'above' ? 'Goes above' : rule.comparison === 'below' ? 'Drops below' : 'Equals'} <strong>{Number(rule.threshold).toLocaleString()}</strong> → {rule.recipient_email}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div
+                    onClick={() => handleToggle(rule.id, rule.is_active)}
+                    style={{ width: 38, height: 22, borderRadius: 11, cursor: 'pointer', position: 'relative', backgroundColor: rule.is_active ? '#7c3aed' : c.border, transition: 'background-color 0.2s', flexShrink: 0 }}
+                  >
+                    <div style={{ width: 16, height: 16, borderRadius: '50%', backgroundColor: 'white', position: 'absolute', top: 3, left: rule.is_active ? 19 : 3, transition: 'left 0.2s' }} />
+                  </div>
+                  <button onClick={() => handleDelete(rule.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4 }} title="Delete rule">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Alert history */}
+      {history.length > 0 && (
+        <div>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, marginBottom: 12 }}>Alert History</h3>
+          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden' }}>
+            {history.slice(0, 15).map((h: any, i: number) => (
+              <div key={h.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: i < Math.min(history.length, 15) - 1 ? `1px solid ${c.borderSubtle}` : 'none' }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 12, color: c.text }}>{h.message}</div>
+                </div>
+                <div style={{ fontSize: 11, color: c.textMuted, whiteSpace: 'nowrap', marginLeft: 12 }}>
+                  {new Date(h.triggered_at).toLocaleString()}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ProfileTab() {
   const { c } = useTheme();
@@ -478,9 +683,10 @@ export default function SettingsPage() {
 
   // Team invite state
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState("member");
   const [inviting, setInviting] = useState(false);
   const [inviteMsg, setInviteMsg] = useState<{ text: string; ok: boolean } | null>(null);
-  const [teamData, setTeamData] = useState<{ invites: any[]; canInviteMore: boolean; slotsUsed: number; maxSlots: number } | null>(null);
+  const [teamData, setTeamData] = useState<{ members: any[]; invites: any[]; canInviteMore: boolean; slotsUsed: number; maxSlots: number } | null>(null);
 
   useEffect(() => {
     if (workspace?.id && activeTab === "team") {
@@ -489,9 +695,9 @@ export default function SettingsPage() {
         fetch(`/api/team/invite?workspace_id=${workspace.id}`, {
           headers: { Authorization: `Bearer ${session.access_token}` }
         }).then(r => r.json()).then(d => {
-          if (d.error) setTeamData({ invites: [], canInviteMore: true, slotsUsed: 0, maxSlots: 2 });
+          if (d.error) setTeamData({ members: [], invites: [], canInviteMore: true, slotsUsed: 0, maxSlots: 2 });
           else setTeamData(d);
-        }).catch(() => setTeamData({ invites: [], canInviteMore: true, slotsUsed: 0, maxSlots: 2 }));
+        }).catch(() => setTeamData({ members: [], invites: [], canInviteMore: true, slotsUsed: 0, maxSlots: 2 }));
       });
     }
   }, [workspace?.id, activeTab]);
@@ -506,7 +712,7 @@ export default function SettingsPage() {
     const res = await fetch('/api/team/invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-      body: JSON.stringify({ email: inviteEmail, workspace_id: workspace.id }),
+      body: JSON.stringify({ email: inviteEmail, workspace_id: workspace.id, role: inviteRole }),
     });
     const data = await res.json();
     setInviteMsg({ text: data.success ? `Invite sent to ${inviteEmail}` : data.error, ok: !!data.success });
@@ -706,8 +912,8 @@ export default function SettingsPage() {
           <div style={{ padding: "20px 24px", borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, marginBottom: 20 }}>
             <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Invite a team member</h3>
             <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>They'll receive an email with a link to sign up and join your workspace.</p>
-            <form onSubmit={handleInvite} style={{ display: "flex", gap: 10 }}>
-              <div style={{ position: "relative", flex: 1 }}>
+            <form onSubmit={handleInvite} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <div style={{ position: "relative", flex: 1, minWidth: 180 }}>
                 <Mail size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#475569" }} />
                 <input
                   type="email"
@@ -721,6 +927,15 @@ export default function SettingsPage() {
                   onBlur={e => (e.target as HTMLInputElement).style.borderColor = "#334155"}
                 />
               </div>
+              <select
+                value={inviteRole}
+                onChange={e => setInviteRole(e.target.value)}
+                style={{ padding: "10px 12px", borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 13, fontWeight: 500, cursor: "pointer", outline: "none" }}
+              >
+                <option value="admin">Admin</option>
+                <option value="member">Member</option>
+                <option value="viewer">Viewer</option>
+              </select>
               <button
                 type="submit"
                 disabled={inviting || !inviteEmail || teamData?.canInviteMore === false}
@@ -741,27 +956,74 @@ export default function SettingsPage() {
             )}
           </div>
 
+          {/* Active members */}
+          {teamData?.members && teamData.members.length > 0 && (
+            <div style={{ padding: "20px 24px", borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, marginBottom: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Team Members</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {teamData.members.map((m: any) => {
+                  const roleColors: Record<string, { bg: string; color: string }> = {
+                    owner: { bg: "rgba(245,158,11,0.1)", color: "#f59e0b" },
+                    admin: { bg: "rgba(124,58,237,0.1)", color: "#7c3aed" },
+                    member: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6" },
+                    viewer: { bg: "rgba(113,113,122,0.1)", color: "#71717a" },
+                  };
+                  const rc = roleColors[m.role] || roleColors.member;
+                  return (
+                    <div key={m.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, backgroundColor: c.bgPage, border: `1px solid ${c.borderSubtle}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", backgroundColor: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
+                          {(m.user_id || '?').substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 14, color: c.text }}>{m.user_id === workspace?.owner_id || m.user_id === workspace?.created_by ? 'You (Owner)' : `Member`}</div>
+                          <div style={{ fontSize: 11, color: c.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, backgroundColor: rc.bg, color: rc.color, textTransform: "capitalize" }}>
+                        {m.role}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Pending invites */}
           {teamData?.invites && teamData.invites.length > 0 && (
             <div style={{ padding: "20px 24px", borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}>
               <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Pending Invites</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {teamData.invites.map((inv: any) => (
-                  <div key={inv.id || inv.email} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, backgroundColor: c.bgPage, border: `1px solid ${c.borderSubtle}` }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: "50%", backgroundColor: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
-                        {inv.email[0].toUpperCase()}
+                {teamData.invites.map((inv: any) => {
+                  const roleColors: Record<string, { bg: string; color: string }> = {
+                    admin: { bg: "rgba(124,58,237,0.1)", color: "#7c3aed" },
+                    member: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6" },
+                    viewer: { bg: "rgba(113,113,122,0.1)", color: "#71717a" },
+                  };
+                  const rc = roleColors[inv.role] || roleColors.member;
+                  return (
+                    <div key={inv.id || inv.email} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, backgroundColor: c.bgPage, border: `1px solid ${c.borderSubtle}` }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 32, height: 32, borderRadius: "50%", backgroundColor: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
+                          {inv.email[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={{ fontSize: 14, color: c.text }}>{inv.email}</div>
+                          <div style={{ fontSize: 11, color: c.textMuted }}>Invited {new Date(inv.created_at).toLocaleDateString()}</div>
+                        </div>
                       </div>
-                      <div>
-                        <div style={{ fontSize: 14, color: c.text }}>{inv.email}</div>
-                        <div style={{ fontSize: 11, color: c.textMuted }}>Invited {new Date(inv.created_at).toLocaleDateString()}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, backgroundColor: rc.bg, color: rc.color, textTransform: "capitalize" }}>
+                          {inv.role || 'member'}
+                        </span>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, backgroundColor: inv.status === "accepted" ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)", color: inv.status === "accepted" ? "#22c55e" : "#f59e0b" }}>
+                          {inv.status === "accepted" ? "Joined" : "Pending"}
+                        </span>
                       </div>
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, backgroundColor: inv.status === "accepted" ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)", color: inv.status === "accepted" ? "#22c55e" : "#f59e0b" }}>
-                      {inv.status === "accepted" ? "Joined" : "Pending"}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
@@ -776,7 +1038,9 @@ export default function SettingsPage() {
 
       {activeTab === "billing" && <BillingTab />}
 
-      {activeTab !== "integrations" && activeTab !== "brand" && activeTab !== "profile" && activeTab !== "notifications" && activeTab !== "billing" && activeTab !== "team" && (
+      {activeTab === "alerts" && workspace?.id && <AlertsTab workspaceId={workspace.id} />}
+
+      {activeTab !== "integrations" && activeTab !== "brand" && activeTab !== "profile" && activeTab !== "notifications" && activeTab !== "billing" && activeTab !== "team" && activeTab !== "alerts" && (
         <div style={{ textAlign: "center", padding: "60px 20px", borderRadius: "16px", border: `1px dashed ${c.border}` }}>
           <p style={{ fontSize: "15px", color: c.textMuted }}>Coming soon — {activeTab} settings</p>
         </div>

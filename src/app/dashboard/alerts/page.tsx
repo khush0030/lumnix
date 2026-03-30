@@ -4,7 +4,6 @@ import { Bell, AlertCircle, AlertTriangle, Info, CheckCircle2, TrendingDown, Tre
 import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useGSCData, useGA4Data } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
-import { useTheme } from '@/lib/theme';
 
 type Alert = {
   id: string;
@@ -121,10 +120,10 @@ function generateAlerts(gscKeywords: any[], ga4Data: any[]): Alert[] {
 }
 
 const severityConfig = {
-  critical: { icon: AlertCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)' },
-  warning:  { icon: AlertTriangle, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)' },
-  info:     { icon: Info, color: '#3b82f6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)' },
-  success:  { icon: CheckCircle2, color: '#22c55e', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)' },
+  critical: { icon: AlertCircle, color: '#EF4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.15)' },
+  warning:  { icon: AlertTriangle, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.15)' },
+  info:     { icon: Info, color: '#6366F1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.15)' },
+  success:  { icon: CheckCircle2, color: '#10B981', bg: 'rgba(16,185,129,0.08)', border: 'rgba(16,185,129,0.15)' },
 };
 
 export default function AlertsPage() {
@@ -132,7 +131,6 @@ export default function AlertsPage() {
   const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
   const { data: ga4Resp, loading: ga4Loading } = useGA4Data(workspace?.id, 'overview', 30);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const { c } = useTheme();
 
   const loading = gscLoading || ga4Loading;
   const gscKeywords = gscResp?.keywords || [];
@@ -152,16 +150,16 @@ export default function AlertsPage() {
       {/* Summary bar */}
       <div style={{ display: 'flex', gap: 12, marginBottom: 24, flexWrap: 'wrap' }}>
         {[
-          { label: 'Critical', count: counts.critical, color: '#ef4444', bg: 'rgba(239,68,68,0.08)' },
-          { label: 'Warnings', count: counts.warning, color: '#f59e0b', bg: 'rgba(245,158,11,0.08)' },
-          { label: 'Wins', count: counts.success, color: '#22c55e', bg: 'rgba(34,197,94,0.08)' },
+          { label: 'Critical', count: counts.critical, color: '#EF4444', bg: 'rgba(239,68,68,0.08)' },
+          { label: 'Warnings', count: counts.warning, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)' },
+          { label: 'Wins', count: counts.success, color: '#10B981', bg: 'rgba(16,185,129,0.08)' },
         ].map(s => (
-          <div key={s.label} style={{ padding: '12px 20px', borderRadius: 10, backgroundColor: s.bg, border: `1px solid ${s.color}30`, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'var(--font-display)' }}>{s.count}</span>
-            <span style={{ fontSize: 13, color: '#64748b' }}>{s.label}</span>
+          <div key={s.label} style={{ padding: '12px 20px', borderRadius: 10, backgroundColor: s.bg, border: `1px solid ${s.color}20`, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: s.color, fontFamily: 'var(--font-mono)' }}>{s.count}</span>
+            <span style={{ fontSize: 13, color: '#888888' }}>{s.label}</span>
           </div>
         ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#475569' }}>
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#555555' }}>
           <RefreshCw size={13} />
           <span>Based on your last sync</span>
         </div>
@@ -170,7 +168,7 @@ export default function AlertsPage() {
       {loading ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[1,2,3].map(i => (
-            <div key={i} style={{ height: 80, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12 }} />
+            <div key={i} style={{ height: 80, backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, animation: 'pulse 1.5s ease-in-out infinite' }} />
           ))}
         </div>
       ) : (
@@ -181,18 +179,18 @@ export default function AlertsPage() {
               <div key={alert.id} style={{ padding: '16px 20px', borderRadius: 12, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, display: 'flex', alignItems: 'flex-start', gap: 14 }}>
                 <cfg.icon size={20} color={cfg.color} style={{ flexShrink: 0, marginTop: 1 }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>{alert.title}</div>
-                  <div style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.5 }}>{alert.detail}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: '#FAFAFA', marginBottom: 4 }}>{alert.title}</div>
+                  <div style={{ fontSize: 13, color: '#888888', lineHeight: 1.5 }}>{alert.detail}</div>
                   <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, backgroundColor: `${cfg.color}15`, color: cfg.color }}>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 4, backgroundColor: `${cfg.color}12`, color: cfg.color }}>
                       {alert.source}
                     </span>
-                    <span style={{ fontSize: 11, color: '#52525b' }}>Live data</span>
+                    <span style={{ fontSize: 11, color: '#555555' }}>Live data</span>
                   </div>
                 </div>
                 <button
                   onClick={() => setDismissed(prev => new Set([...prev, alert.id]))}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#52525b', padding: 4, flexShrink: 0 }}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555555', padding: 4, flexShrink: 0 }}
                   title="Dismiss"
                 >
                   <X size={16} />
@@ -207,7 +205,7 @@ export default function AlertsPage() {
         <div style={{ marginTop: 16, textAlign: 'center' }}>
           <button
             onClick={() => setDismissed(new Set())}
-            style={{ fontSize: 12, color: '#7c3aed', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+            style={{ fontSize: 12, color: '#6366F1', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
           >
             Restore {dismissed.size} dismissed alert{dismissed.size > 1 ? 's' : ''}
           </button>
@@ -216,10 +214,10 @@ export default function AlertsPage() {
 
       {/* Setup note if no data */}
       {!loading && gscKeywords.length === 0 && ga4Data.length === 0 && (
-        <div style={{ marginTop: 20, padding: 20, borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, textAlign: 'center' }}>
-          <Bell size={28} color={c.textMuted} style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 8 }}>Connect and sync GSC or GA4 to get real-time alerts</p>
-          <a href="/dashboard/settings" style={{ fontSize: 13, color: '#7c3aed', textDecoration: 'none', fontWeight: 500 }}>Go to Settings →</a>
+        <div style={{ marginTop: 20, padding: 20, borderRadius: 12, backgroundColor: '#111111', border: '1px solid #222222', textAlign: 'center' }}>
+          <Bell size={28} color="#555555" style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, color: '#888888', marginBottom: 8 }}>Connect and sync GSC or GA4 to get real-time alerts</p>
+          <a href="/dashboard/settings" style={{ fontSize: 13, color: '#6366F1', textDecoration: 'none', fontWeight: 500 }}>Go to Settings &rarr;</a>
         </div>
       )}
     </PageShell>

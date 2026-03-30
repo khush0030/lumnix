@@ -6,6 +6,112 @@ import { useWorkspaceCtx } from "@/lib/workspace-context";
 import { supabase } from "@/lib/supabase";
 import { useTheme } from "@/lib/theme";
 
+/* ─── Design Tokens ─── */
+const T = {
+  bg: '#0A0A0A',
+  surface: '#111111',
+  surfaceElevated: '#1A1A1A',
+  border: '#222222',
+  borderStrong: '#333333',
+  text: '#FAFAFA',
+  textSecondary: '#888888',
+  textMuted: '#555555',
+  accent: '#6366F1',
+  accentHover: '#4F46E5',
+  accentSubtle: 'rgba(99,102,241,0.08)',
+  success: '#10B981',
+  warning: '#F59E0B',
+  danger: '#EF4444',
+  dangerSubtle: 'rgba(239,68,68,0.08)',
+  dangerBorder: 'rgba(239,68,68,0.2)',
+  successSubtle: 'rgba(16,185,129,0.08)',
+  successBorder: 'rgba(16,185,129,0.2)',
+  warningSubtle: 'rgba(245,158,11,0.08)',
+  warningBorder: 'rgba(245,158,11,0.2)',
+  mono: 'var(--font-mono)',
+};
+
+const inputBaseStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '10px 12px',
+  borderRadius: 8,
+  border: `1px solid ${T.border}`,
+  backgroundColor: T.surface,
+  color: T.text,
+  fontSize: 13,
+  outline: 'none',
+  boxSizing: 'border-box',
+};
+
+const primaryBtnStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 8,
+  padding: '10px 24px', borderRadius: 8, border: 'none',
+  backgroundColor: T.accent, color: '#fff',
+  fontSize: 14, fontWeight: 600, cursor: 'pointer',
+};
+
+const ghostBtnStyle: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', gap: 8,
+  padding: '10px 20px', borderRadius: 8,
+  border: `1px solid ${T.borderStrong}`,
+  backgroundColor: 'transparent', color: T.textSecondary,
+  fontSize: 13, fontWeight: 500, cursor: 'pointer',
+};
+
+const destructiveBtnStyle: React.CSSProperties = {
+  background: T.dangerSubtle, color: T.danger,
+  border: `1px solid ${T.dangerBorder}`,
+  borderRadius: 8, padding: '6px 12px', cursor: 'pointer',
+  fontSize: 13, fontWeight: 500,
+};
+
+const cardStyle: React.CSSProperties = {
+  backgroundColor: T.surface,
+  border: `1px solid ${T.border}`,
+  borderRadius: 12,
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 12, fontWeight: 600,
+  color: T.textSecondary, marginBottom: 6,
+};
+
+function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
+  return (
+    <div
+      onClick={onToggle}
+      style={{
+        width: 42, height: 24, borderRadius: 12, cursor: 'pointer',
+        position: 'relative',
+        backgroundColor: on ? T.accent : T.borderStrong,
+        transition: 'background-color 0.2s', flexShrink: 0,
+      }}
+    >
+      <div style={{
+        width: 18, height: 18, borderRadius: '50%', backgroundColor: '#fff',
+        position: 'absolute', top: 3,
+        left: on ? 21 : 3, transition: 'left 0.2s',
+      }} />
+    </div>
+  );
+}
+
+function StatusPill({ connected, label }: { connected: boolean; label?: string }) {
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 6,
+      fontSize: 11, fontWeight: 600,
+      padding: '4px 10px', borderRadius: 20,
+      backgroundColor: connected ? T.successSubtle : 'rgba(113,113,122,0.08)',
+      color: connected ? T.success : T.textMuted,
+      border: `1px solid ${connected ? T.successBorder : T.border}`,
+    }}>
+      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: connected ? T.success : T.textMuted }} />
+      {label || (connected ? 'Connected' : 'Disconnected')}
+    </span>
+  );
+}
+
 const BRAND_COLORS = [
   { label: 'Purple', value: '#7c3aed' },
   { label: 'Blue', value: '#3b82f6' },
@@ -16,14 +122,13 @@ const BRAND_COLORS = [
 ];
 
 function NotificationsTab() {
-  const { c } = useTheme();
   const notifItems = [
     { id: "traffic", label: "Traffic Alerts", desc: "Get notified when traffic spikes or drops significantly" },
     { id: "ads", label: "Ad Alerts", desc: "Budget exhaustion, CPC spikes, ROAS drops" },
     { id: "weekly", label: "Weekly Digest", desc: "A weekly summary of your marketing performance" },
     { id: "monthly", label: "Monthly Report", desc: "Full monthly marketing report delivered to your inbox" },
   ];
-    const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
+  const [toggles, setToggles] = useState<Record<string, boolean>>(() => {
     try {
       if (typeof window === 'undefined') return { traffic: true, ads: true, weekly: true, monthly: false };
       const s = localStorage.getItem('lumnix-notif-prefs');
@@ -40,24 +145,26 @@ function NotificationsTab() {
   }
 
   return (
-    <div style={{ maxWidth: "560px" }}>
-      <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: "16px", overflow: "hidden", marginBottom: "20px" }}>
+    <div style={{ maxWidth: 560 }}>
+      <div style={{ ...cardStyle, overflow: 'hidden', marginBottom: 20 }}>
         {notifItems.map((item, i) => (
-          <div key={item.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 24px", borderBottom: i < notifItems.length - 1 ? `1px solid ${c.border}` : "none" }}>
+          <div key={item.id} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '16px 20px',
+            borderBottom: i < notifItems.length - 1 ? `1px solid ${T.border}` : 'none',
+          }}>
             <div>
-              <div style={{ fontSize: "14px", fontWeight: 500, color: c.text }}>{item.label}</div>
-              <div style={{ fontSize: "12px", color: c.textSecondary, marginTop: "2px" }}>{item.desc}</div>
+              <div style={{ fontSize: 14, fontWeight: 500, color: T.text }}>{item.label}</div>
+              <div style={{ fontSize: 12, color: T.textSecondary, marginTop: 2 }}>{item.desc}</div>
             </div>
-            <div
-              onClick={() => setToggles(t => ({ ...t, [item.id]: !t[item.id] }))}
-              style={{ width: "42px", height: "24px", borderRadius: "12px", cursor: "pointer", position: "relative", backgroundColor: toggles[item.id] ? "#7c3aed" : c.border, transition: "background-color 0.2s", flexShrink: 0 }}
-            >
-              <div style={{ width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "white", position: "absolute", top: "3px", left: toggles[item.id] ? "21px" : "3px", transition: "left 0.2s" }} />
-            </div>
+            <Toggle on={!!toggles[item.id]} onToggle={() => setToggles(t => ({ ...t, [item.id]: !t[item.id] }))} />
           </div>
         ))}
       </div>
-      <button onClick={save} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "10px 24px", borderRadius: "10px", border: "none", background: saved ? "#22c55e" : "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "white", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>
+      <button onClick={save} style={{
+        ...primaryBtnStyle,
+        backgroundColor: saved ? T.success : T.accent,
+      }}>
         {saved ? <><Check size={16} /> Saved!</> : "Save Preferences"}
       </button>
     </div>
@@ -65,7 +172,6 @@ function NotificationsTab() {
 }
 
 function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: () => void; onUpdate?: (w: any) => void }) {
-  const { c } = useTheme();
   const [brandName, setBrandName] = useState(workspace?.name || '');
   const [brandColor, setBrandColor] = useState(workspace?.brand_color || '#7c3aed');
   const [logoUrl, setLogoUrl] = useState(workspace?.logo_url || '');
@@ -144,76 +250,87 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
   }
 
   return (
-    <div style={{ maxWidth: '560px' }}>
-      <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: '16px', padding: '24px', marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 700, color: c.text, marginBottom: '20px' }}>Brand Identity</h3>
+    <div style={{ maxWidth: 560 }}>
+      <div style={{ ...cardStyle, padding: 24, marginBottom: 20 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 20 }}>Brand Identity</h3>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '8px' }}>Brand Name</label>
+        {/* Brand Name */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Brand Name</label>
           <input
             type="text"
             value={brandName}
             onChange={e => setBrandName(e.target.value)}
             placeholder="e.g. Acme Corp"
-            style={{ width: '100%', padding: '12px 14px', borderRadius: '10px', border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box' }}
+            style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14 }}
+            onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
+            onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
           />
         </div>
 
-        <div style={{ marginBottom: '20px' }}>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '8px' }}>Logo</label>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '12px', backgroundColor: c.bgInput, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', flexShrink: 0, border: `1px solid ${c.border}` }}>
+        {/* Logo */}
+        <div style={{ marginBottom: 20 }}>
+          <label style={labelStyle}>Logo</label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{
+              width: 60, height: 60, borderRadius: 12,
+              backgroundColor: T.surface, display: 'flex', alignItems: 'center',
+              justifyContent: 'center', overflow: 'hidden', flexShrink: 0,
+              border: `1px solid ${T.border}`,
+            }}>
               {logoPreview ? (
                 <img src={logoPreview} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                <div style={{ fontSize: '18px', fontWeight: 700, color: brandColor }}>{brandName.substring(0, 2).toUpperCase() || 'KR'}</div>
+                <div style={{ fontSize: 18, fontWeight: 700, color: brandColor }}>{brandName.substring(0, 2).toUpperCase() || 'KR'}</div>
               )}
             </div>
             <div>
               <button
                 onClick={() => fileRef.current?.click()}
                 disabled={uploading}
-                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', borderRadius: '8px', border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.textSecondary, fontSize: '13px', fontWeight: 500, cursor: 'pointer' }}
+                style={{ ...ghostBtnStyle, padding: '8px 16px', fontSize: 13 }}
               >
                 {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
                 {uploading ? 'Uploading...' : 'Upload Logo'}
               </button>
-              <div style={{ fontSize: '11px', color: c.textMuted, marginTop: '4px' }}>PNG, JPG up to 2MB</div>
+              <div style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>PNG, JPG up to 2MB</div>
               <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) handleLogoUpload(f); }} />
             </div>
           </div>
         </div>
 
+        {/* Brand Color Presets */}
         <div>
-          <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '10px' }}>Brand Color</label>
-          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            {BRAND_COLORS.map(c => (
+          <label style={{ ...labelStyle, marginBottom: 10 }}>Brand Color</label>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+            {BRAND_COLORS.map(bc => (
               <button
-                key={c.value}
-                onClick={() => setBrandColor(c.value)}
-                title={c.label}
+                key={bc.value}
+                onClick={() => setBrandColor(bc.value)}
+                title={bc.label}
                 style={{
-                  width: '38px', height: '38px', borderRadius: '10px',
-                  backgroundColor: c.value, border: 'none', cursor: 'pointer',
-                  outline: brandColor === c.value ? '3px solid white' : '3px solid transparent',
-                  outlineOffset: '2px', position: 'relative',
+                  width: 36, height: 36, borderRadius: '50%',
+                  backgroundColor: bc.value, border: 'none', cursor: 'pointer',
+                  outline: brandColor === bc.value ? `2px solid ${T.accent}` : '2px solid transparent',
+                  outlineOffset: 3, position: 'relative',
+                  transition: 'outline-color 0.15s',
                 }}
               >
-                {brandColor === c.value && (
-                  <Check size={16} color="white" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
+                {brandColor === bc.value && (
+                  <Check size={14} color="white" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }} />
                 )}
               </button>
             ))}
           </div>
-          <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '20px', height: '20px', borderRadius: '6px', backgroundColor: brandColor }} />
-            <span style={{ fontSize: '13px', color: c.textSecondary }}>{brandColor}</span>
+          <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: brandColor }} />
+            <span style={{ fontSize: 13, color: T.textSecondary, fontFamily: T.mono }}>{brandColor}</span>
           </div>
         </div>
       </div>
 
       {error && (
-        <div style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', fontSize: '13px' }}>
+        <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, backgroundColor: T.dangerSubtle, border: `1px solid ${T.dangerBorder}`, color: '#f87171', fontSize: 13 }}>
           {error}
         </div>
       )}
@@ -221,7 +338,12 @@ function BrandTab({ workspace, onSaved, onUpdate }: { workspace: any; onSaved?: 
       <button
         onClick={handleSave}
         disabled={saving}
-        style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 24px', borderRadius: '10px', border: 'none', background: saved ? '#22c55e' : 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: '14px', fontWeight: 600, cursor: saving ? 'wait' : 'pointer', opacity: saving ? 0.7 : 1 }}
+        style={{
+          ...primaryBtnStyle,
+          backgroundColor: saved ? T.success : T.accent,
+          opacity: saving ? 0.7 : 1,
+          cursor: saving ? 'wait' : 'pointer',
+        }}
       >
         {saving ? <Loader2 size={16} className="animate-spin" /> : saved ? <Check size={16} /> : null}
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Brand Settings'}
@@ -238,14 +360,11 @@ const providers = [
 ];
 
 const tabs = [
-  { id: "integrations", label: "Integrations", icon: Plug },
-  { id: "team", label: "Team", icon: Users },
-  { id: "alerts", label: "Alerts", icon: AlertTriangle },
-  { id: "brand", label: "Brand", icon: Palette },
-  { id: "profile", label: "Profile", icon: User },
-  { id: "notifications", label: "Notifications", icon: Bell },
+  { id: "integrations", label: "General", icon: Plug },
+  { id: "team", label: "Integrations", icon: Users },
+  { id: "alerts", label: "Team", icon: AlertTriangle },
+  { id: "brand", label: "Alerts", icon: Palette },
   { id: "billing", label: "Billing", icon: CreditCard },
-  { id: "security", label: "Security", icon: Shield },
 ];
 
 const ALERT_METRICS = [
@@ -261,7 +380,6 @@ const ALERT_METRICS = [
 ];
 
 function AlertsTab({ workspaceId }: { workspaceId: string }) {
-  const { c } = useTheme();
   const [rules, setRules] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -331,19 +449,17 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
     loadAlerts();
   }
 
-  const inputStyle = { width: '100%', padding: '10px 12px', borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 13, outline: 'none', boxSizing: 'border-box' as const };
-
   return (
     <div style={{ maxWidth: 640 }}>
       {/* Header + Add button */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
         <div>
-          <h3 style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 4 }}>Alert Rules</h3>
-          <p style={{ fontSize: 13, color: c.textSecondary, margin: 0 }}>Get notified when metrics cross your thresholds. Checked every hour.</p>
+          <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 4 }}>Alert Rules</h3>
+          <p style={{ fontSize: 13, color: T.textSecondary, margin: 0 }}>Get notified when metrics cross your thresholds. Checked every hour.</p>
         </div>
         <button
           onClick={() => setShowForm(f => !f)}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}
+          style={{ ...primaryBtnStyle, padding: '8px 14px', fontSize: 13 }}
         >
           <Plus size={14} /> Add Alert
         </button>
@@ -351,17 +467,17 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
 
       {/* Add alert form */}
       {showForm && (
-        <form onSubmit={handleCreate} style={{ padding: 20, borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, marginBottom: 20 }}>
+        <form onSubmit={handleCreate} style={{ ...cardStyle, padding: 20, marginBottom: 20 }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Metric</label>
-              <select value={metric} onChange={e => setMetric(e.target.value)} style={inputStyle}>
+              <label style={labelStyle}>Metric</label>
+              <select value={metric} onChange={e => setMetric(e.target.value)} style={inputBaseStyle}>
                 {ALERT_METRICS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Condition</label>
-              <select value={comparison} onChange={e => setComparison(e.target.value)} style={inputStyle}>
+              <label style={labelStyle}>Condition</label>
+              <select value={comparison} onChange={e => setComparison(e.target.value)} style={inputBaseStyle}>
                 <option value="above">Goes above</option>
                 <option value="below">Drops below</option>
                 <option value="equals">Equals</option>
@@ -370,20 +486,26 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Threshold</label>
-              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="e.g. 1000" required style={inputStyle} />
+              <label style={labelStyle}>Threshold</label>
+              <input type="number" value={threshold} onChange={e => setThreshold(e.target.value)} placeholder="e.g. 1000" required style={inputBaseStyle}
+                onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
+                onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+              />
             </div>
             <div>
-              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: c.textSecondary, marginBottom: 6 }}>Notify Email</label>
-              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required style={inputStyle} />
+              <label style={labelStyle}>Notify Email</label>
+              <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@company.com" required style={inputBaseStyle}
+                onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
+                onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+              />
             </div>
           </div>
-          {error && <p style={{ fontSize: 12, color: '#ef4444', marginBottom: 12 }}>{error}</p>}
+          {error && <p style={{ fontSize: 12, color: T.danger, marginBottom: 12 }}>{error}</p>}
           <div style={{ display: 'flex', gap: 10 }}>
-            <button type="submit" disabled={saving} style={{ padding: '10px 20px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+            <button type="submit" disabled={saving} style={{ ...primaryBtnStyle, padding: '10px 20px', fontSize: 13, opacity: saving ? 0.7 : 1 }}>
               {saving ? 'Creating...' : 'Create Alert'}
             </button>
-            <button type="button" onClick={() => setShowForm(false)} style={{ padding: '10px 20px', borderRadius: 8, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 13, cursor: 'pointer' }}>
+            <button type="button" onClick={() => setShowForm(false)} style={ghostBtnStyle}>
               Cancel
             </button>
           </div>
@@ -393,34 +515,35 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
       {/* Rules list */}
       {loading ? (
         <div style={{ padding: 40, textAlign: 'center' }}>
-          <Loader2 size={20} color="#7c3aed" style={{ animation: 'spin 1s linear infinite' }} />
+          <Loader2 size={20} color={T.accent} style={{ animation: 'spin 1s linear infinite' }} />
         </div>
       ) : rules.length === 0 ? (
-        <div style={{ padding: 40, textAlign: 'center', borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}>
-          <AlertTriangle size={28} color={c.textMuted} style={{ marginBottom: 10 }} />
-          <p style={{ fontSize: 14, color: c.textSecondary, marginBottom: 4 }}>No alert rules yet</p>
-          <p style={{ fontSize: 12, color: c.textMuted }}>Click "Add Alert" to create your first rule</p>
+        <div style={{ ...cardStyle, padding: 40, textAlign: 'center' }}>
+          <AlertTriangle size={28} color={T.textMuted} style={{ marginBottom: 10 }} />
+          <p style={{ fontSize: 14, color: T.textSecondary, marginBottom: 4 }}>No alert rules yet</p>
+          <p style={{ fontSize: 12, color: T.textMuted }}>Click &quot;Add Alert&quot; to create your first rule</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
           {rules.map((rule: any) => {
             const metricLabel = ALERT_METRICS.find(m => m.value === rule.metric)?.label || rule.metric;
             return (
-              <div key={rule.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 18px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${rule.is_active ? 'rgba(124,58,237,0.2)' : c.border}`, opacity: rule.is_active ? 1 : 0.6 }}>
+              <div key={rule.id} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '14px 18px', borderRadius: 12,
+                backgroundColor: T.surface,
+                border: `1px solid ${rule.is_active ? 'rgba(99,102,241,0.2)' : T.border}`,
+                opacity: rule.is_active ? 1 : 0.6,
+              }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: c.text, marginBottom: 4 }}>{metricLabel}</div>
-                  <div style={{ fontSize: 12, color: c.textSecondary }}>
-                    {rule.comparison === 'above' ? 'Goes above' : rule.comparison === 'below' ? 'Drops below' : 'Equals'} <strong>{Number(rule.threshold).toLocaleString()}</strong> → {rule.recipient_email}
+                  <div style={{ fontSize: 13, fontWeight: 600, color: T.text, marginBottom: 4 }}>{metricLabel}</div>
+                  <div style={{ fontSize: 12, color: T.textSecondary }}>
+                    {rule.comparison === 'above' ? 'Goes above' : rule.comparison === 'below' ? 'Drops below' : 'Equals'} <strong style={{ fontFamily: T.mono }}>{Number(rule.threshold).toLocaleString()}</strong> &rarr; {rule.recipient_email}
                   </div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div
-                    onClick={() => handleToggle(rule.id, rule.is_active)}
-                    style={{ width: 38, height: 22, borderRadius: 11, cursor: 'pointer', position: 'relative', backgroundColor: rule.is_active ? '#7c3aed' : c.border, transition: 'background-color 0.2s', flexShrink: 0 }}
-                  >
-                    <div style={{ width: 16, height: 16, borderRadius: '50%', backgroundColor: 'white', position: 'absolute', top: 3, left: rule.is_active ? 19 : 3, transition: 'left 0.2s' }} />
-                  </div>
-                  <button onClick={() => handleDelete(rule.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: 4 }} title="Delete rule">
+                  <Toggle on={rule.is_active} onToggle={() => handleToggle(rule.id, rule.is_active)} />
+                  <button onClick={() => handleDelete(rule.id)} style={{ ...destructiveBtnStyle, padding: 6, display: 'flex' }} title="Delete rule">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -433,14 +556,18 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
       {/* Alert history */}
       {history.length > 0 && (
         <div>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: c.text, marginBottom: 12 }}>Alert History</h3>
-          <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 12, overflow: 'hidden' }}>
+          <h3 style={{ fontSize: 14, fontWeight: 700, color: T.text, marginBottom: 12 }}>Alert History</h3>
+          <div style={{ ...cardStyle, overflow: 'hidden' }}>
             {history.slice(0, 15).map((h: any, i: number) => (
-              <div key={h.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 16px', borderBottom: i < Math.min(history.length, 15) - 1 ? `1px solid ${c.borderSubtle}` : 'none' }}>
+              <div key={h.id} style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '10px 16px',
+                borderBottom: i < Math.min(history.length, 15) - 1 ? `1px solid ${T.border}` : 'none',
+              }}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 12, color: c.text }}>{h.message}</div>
+                  <div style={{ fontSize: 12, color: T.text }}>{h.message}</div>
                 </div>
-                <div style={{ fontSize: 11, color: c.textMuted, whiteSpace: 'nowrap', marginLeft: 12 }}>
+                <div style={{ fontSize: 11, color: T.textMuted, whiteSpace: 'nowrap', marginLeft: 12, fontFamily: T.mono }}>
                   {new Date(h.triggered_at).toLocaleString()}
                 </div>
               </div>
@@ -453,7 +580,6 @@ function AlertsTab({ workspaceId }: { workspaceId: string }) {
 }
 
 function ProfileTab() {
-  const { c } = useTheme();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [company, setCompany] = useState('');
@@ -501,29 +627,38 @@ function ProfileTab() {
     setSaving(false);
   }
 
-  const inputStyle = { width: '100%', padding: '12px 14px', borderRadius: '10px', border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const };
-
   return (
-    <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: '16px', padding: '24px', maxWidth: '500px' }}>
-      <h3 style={{ fontSize: '16px', fontWeight: 700, color: c.text, marginBottom: '20px' }}>Profile Settings</h3>
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '6px' }}>Full Name</label>
-        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={inputStyle} />
+    <div style={{ ...cardStyle, padding: 24, maxWidth: 500 }}>
+      <h3 style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 20 }}>Profile Settings</h3>
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>Full Name</label>
+        <input value={fullName} onChange={e => setFullName(e.target.value)} placeholder="Your full name" style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14 }}
+          onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
+          onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+        />
       </div>
-      <div style={{ marginBottom: '16px' }}>
-        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '6px' }}>Email</label>
-        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputStyle, opacity: 0.6, cursor: 'not-allowed' }} />
-        <p style={{ fontSize: '11px', color: c.textMuted, marginTop: '4px' }}>Email cannot be changed here</p>
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>Email</label>
+        <input value={email} readOnly placeholder="your@email.com" style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14, opacity: 0.6, cursor: 'not-allowed' }} />
+        <p style={{ fontSize: 11, color: T.textMuted, marginTop: 4 }}>Email cannot be changed here</p>
       </div>
-      <div style={{ marginBottom: '20px' }}>
-        <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: c.textSecondary, marginBottom: '6px' }}>Company</label>
-        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" style={inputStyle} />
+      <div style={{ marginBottom: 20 }}>
+        <label style={labelStyle}>Company</label>
+        <input value={company} onChange={e => setCompany(e.target.value)} placeholder="Your company name" style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14 }}
+          onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
+          onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
+        />
       </div>
-      {error && <p style={{ fontSize: '13px', color: '#ef4444', marginBottom: '12px' }}>{error}</p>}
+      {error && <p style={{ fontSize: 13, color: T.danger, marginBottom: 12 }}>{error}</p>}
       <button
         onClick={handleSave}
         disabled={saving}
-        style={{ padding: '10px 24px', borderRadius: '10px', background: saved ? '#22c55e' : 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: '14px', fontWeight: 600, border: 'none', cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: '8px', opacity: saving ? 0.7 : 1 }}
+        style={{
+          ...primaryBtnStyle,
+          backgroundColor: saved ? T.success : T.accent,
+          opacity: saving ? 0.7 : 1,
+          cursor: saving ? 'wait' : 'pointer',
+        }}
       >
         {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : saved ? <Check size={16} /> : null}
         {saving ? 'Saving...' : saved ? 'Saved!' : 'Save Changes'}
@@ -533,7 +668,6 @@ function ProfileTab() {
 }
 
 function BillingTab() {
-  const { c } = useTheme();
   const { workspace } = useWorkspaceCtx();
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState('');
@@ -607,17 +741,22 @@ function BillingTab() {
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-          <div style={{ padding: '4px 10px', borderRadius: 6, backgroundColor: currentPlan === 'free' ? 'rgba(113,113,122,0.1)' : 'rgba(124,58,237,0.1)', color: currentPlan === 'free' ? c.textMuted : '#7c3aed', fontSize: 12, fontWeight: 600, textTransform: 'uppercase' }}>
+          <div style={{
+            padding: '4px 10px', borderRadius: 6,
+            backgroundColor: currentPlan === 'free' ? 'rgba(85,85,85,0.1)' : T.accentSubtle,
+            color: currentPlan === 'free' ? T.textMuted : T.accent,
+            fontSize: 12, fontWeight: 600, textTransform: 'uppercase',
+          }}>
             {currentPlan} plan
           </div>
         </div>
-        <p style={{ fontSize: 13, color: c.textSecondary }}>
+        <p style={{ fontSize: 13, color: T.textSecondary }}>
           {currentPlan === 'free' ? 'Upgrade to unlock more integrations, longer data retention, and AI features.' : `You're on the ${currentPlan} plan.`}
         </p>
       </div>
 
       {error && (
-        <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: '#f87171', fontSize: 13 }}>
+        <div style={{ marginBottom: 20, padding: '12px 16px', borderRadius: 8, backgroundColor: T.dangerSubtle, border: `1px solid ${T.dangerBorder}`, color: '#f87171', fontSize: 13 }}>
           {error}
         </div>
       )}
@@ -625,26 +764,25 @@ function BillingTab() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
         {plans.map(plan => (
           <div key={plan.id} style={{
-            backgroundColor: c.bgCard,
-            border: `1px solid ${plan.popular ? '#7c3aed' : plan.current ? 'rgba(34,197,94,0.3)' : c.border}`,
-            borderRadius: 16,
+            ...cardStyle,
+            border: `1px solid ${plan.popular ? T.accent : plan.current ? T.successBorder : T.border}`,
             padding: 24,
             position: 'relative',
           }}>
             {plan.popular && (
-              <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', padding: '3px 12px', borderRadius: 6, backgroundColor: '#7c3aed', color: 'white', fontSize: 11, fontWeight: 600 }}>
+              <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', padding: '3px 12px', borderRadius: 6, backgroundColor: T.accent, color: 'white', fontSize: 11, fontWeight: 600 }}>
                 Most Popular
               </div>
             )}
-            <div style={{ fontSize: 16, fontWeight: 700, color: c.text, marginBottom: 4 }}>{plan.name}</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: T.text, marginBottom: 4 }}>{plan.name}</div>
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, marginBottom: 16 }}>
-              <span style={{ fontSize: 32, fontWeight: 800, color: c.text, letterSpacing: '-0.03em' }}>{plan.price}</span>
-              <span style={{ fontSize: 13, color: c.textMuted }}>{plan.period}</span>
+              <span style={{ fontSize: 32, fontWeight: 800, color: T.text, letterSpacing: '-0.03em', fontFamily: T.mono }}>{plan.price}</span>
+              <span style={{ fontSize: 13, color: T.textMuted }}>{plan.period}</span>
             </div>
             <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px 0' }}>
               {plan.features.map((f, i) => (
-                <li key={i} style={{ fontSize: 13, color: c.textSecondary, padding: '4px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <Check size={13} color="#22c55e" />
+                <li key={i} style={{ fontSize: 13, color: T.textSecondary, padding: '4px 0', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Check size={13} color={T.success} />
                   {f}
                 </li>
               ))}
@@ -654,11 +792,11 @@ function BillingTab() {
               disabled={plan.current || plan.id === 'free' || loading === plan.id}
               style={{
                 width: '100%',
-                padding: '10px',
-                borderRadius: 10,
-                border: plan.current ? `1px solid ${c.border}` : 'none',
-                background: plan.current ? 'transparent' : plan.popular ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : c.bgInput,
-                color: plan.current ? c.textMuted : plan.popular ? 'white' : c.text,
+                padding: 10,
+                borderRadius: 8,
+                border: plan.current ? `1px solid ${T.borderStrong}` : 'none',
+                backgroundColor: plan.current ? 'transparent' : plan.popular ? T.accent : T.surfaceElevated,
+                color: plan.current ? T.textMuted : plan.popular ? 'white' : T.text,
                 fontSize: 14,
                 fontWeight: 600,
                 cursor: plan.current || plan.id === 'free' ? 'default' : 'pointer',
@@ -675,7 +813,6 @@ function BillingTab() {
 }
 
 function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
-  const { c } = useTheme();
   const [webhookUrl, setWebhookUrl] = useState('');
   const [connected, setConnected] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -741,41 +878,45 @@ function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
   return (
     <div style={{ marginTop: 32 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <div style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: 'rgba(74,21,75,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(74,21,75,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img src="https://cdn.simpleicons.org/slack/4A154B" width={26} height={26} alt="Slack" />
         </div>
         <div>
-          <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>Slack Notifications</div>
-          <div style={{ fontSize: 12, color: connected ? '#10b981' : c.textMuted, display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: connected ? '#10b981' : c.textMuted }} />
-            {connected ? 'Connected' : 'Not connected'}
-          </div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>Slack Notifications</div>
+          <StatusPill connected={connected} />
         </div>
       </div>
 
-      <div style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 16, padding: 24 }}>
+      <div style={{ ...cardStyle, padding: 24 }}>
         <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: c.textSecondary, marginBottom: 8 }}>Slack Webhook URL</label>
+          <label style={labelStyle}>Slack Webhook URL</label>
           <input
             type="url"
             value={webhookUrl}
             onChange={e => setWebhookUrl(e.target.value)}
             placeholder="https://hooks.slack.com/services/..."
-            style={{ width: '100%', padding: '12px 14px', borderRadius: 10, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+            style={{ ...inputBaseStyle, padding: '12px 14px', fontSize: 14 }}
+            onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
+            onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
           />
-          <p style={{ fontSize: 12, color: c.textMuted, marginTop: 6, lineHeight: 1.5 }}>
-            Get this from your Slack app settings → Incoming Webhooks. Alerts and anomaly notifications will be sent to this channel.
+          <p style={{ fontSize: 12, color: T.textMuted, marginTop: 6, lineHeight: 1.5 }}>
+            Get this from your Slack app settings &rarr; Incoming Webhooks. Alerts and anomaly notifications will be sent to this channel.
           </p>
         </div>
 
         {error && (
-          <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', fontSize: 13 }}>
+          <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, backgroundColor: T.dangerSubtle, border: `1px solid ${T.dangerBorder}`, color: '#f87171', fontSize: 13 }}>
             {error}
           </div>
         )}
 
         {testResult && (
-          <div style={{ marginBottom: 12, padding: '8px 12px', borderRadius: 8, backgroundColor: testResult.ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', border: `1px solid ${testResult.ok ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)'}`, color: testResult.ok ? '#4ade80' : '#f87171', fontSize: 13 }}>
+          <div style={{
+            marginBottom: 12, padding: '8px 12px', borderRadius: 8,
+            backgroundColor: testResult.ok ? T.successSubtle : T.dangerSubtle,
+            border: `1px solid ${testResult.ok ? T.successBorder : T.dangerBorder}`,
+            color: testResult.ok ? '#4ade80' : '#f87171', fontSize: 13,
+          }}>
             {testResult.text}
           </div>
         )}
@@ -784,7 +925,12 @@ function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
           <button
             onClick={handleSave}
             disabled={saving}
-            style={{ padding: '10px 20px', borderRadius: 10, border: 'none', background: saved ? '#22c55e' : 'linear-gradient(135deg, #7c3aed, #4f46e5)', color: 'white', fontSize: 14, fontWeight: 600, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: saving ? 0.7 : 1 }}
+            style={{
+              ...primaryBtnStyle,
+              backgroundColor: saved ? T.success : T.accent,
+              opacity: saving ? 0.7 : 1,
+              cursor: saving ? 'wait' : 'pointer',
+            }}
           >
             {saving ? <Loader2 size={14} className="animate-spin" /> : saved ? <Check size={14} /> : null}
             {saving ? 'Saving...' : saved ? 'Saved!' : 'Save'}
@@ -793,7 +939,7 @@ function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
             <button
               onClick={handleTest}
               disabled={testing}
-              style={{ padding: '10px 20px', borderRadius: 10, border: `1px solid ${c.border}`, background: 'transparent', color: c.textSecondary, fontSize: 14, fontWeight: 600, cursor: testing ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', gap: 8, opacity: testing ? 0.7 : 1 }}
+              style={{ ...ghostBtnStyle, opacity: testing ? 0.7 : 1, cursor: testing ? 'wait' : 'pointer' }}
             >
               {testing ? <Loader2 size={14} className="animate-spin" /> : null}
               {testing ? 'Sending...' : 'Send Test'}
@@ -806,7 +952,7 @@ function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
 }
 
 export default function SettingsPage() {
-  const { c } = useTheme();
+  const { toggle } = useTheme();
   const [activeTab, setActiveTab] = useState("integrations");
   const { workspace, loading: wsLoading, refetch: refetchWorkspace, setWorkspace } = useWorkspaceCtx();
   const { integrations, loading: intLoading, refetch } = useIntegrations(workspace?.id);
@@ -919,91 +1065,127 @@ export default function SettingsPage() {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: "28px" }}>
-        <h1 style={{ fontSize: "26px", fontWeight: 800, color: c.text, letterSpacing: "-0.5px" }}>Settings</h1>
-        <p style={{ fontSize: "14px", color: c.textSecondary, marginTop: "4px" }}>Manage integrations, brand, and preferences</p>
+    <div style={{ backgroundColor: T.bg, minHeight: '100vh' }}>
+      <div style={{ marginBottom: 32 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: T.text, letterSpacing: '-0.5px' }}>Settings</h1>
+        <p style={{ fontSize: 14, color: T.textSecondary, marginTop: 4 }}>Manage integrations, brand, and preferences</p>
       </div>
 
-      <div style={{ display: "flex", gap: "4px", marginBottom: "24px", borderBottom: `1px solid ${c.border}`, overflowX: "auto" }}>
-        {tabs.map(t => {
-          const Icon = t.icon;
-          return (
-            <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-              display: "flex", alignItems: "center", gap: "8px", padding: "10px 16px", fontSize: "14px",
-              fontWeight: activeTab === t.id ? 600 : 400,
-              color: activeTab === t.id ? c.text : c.textSecondary,
-              backgroundColor: "transparent", border: "none",
-              borderBottom: `2px solid ${activeTab === t.id ? "#7c3aed" : "transparent"}`,
-              cursor: "pointer", marginBottom: "-1px", whiteSpace: "nowrap",
-            }}>
-              <Icon size={16} /> {t.label}
-            </button>
-          );
-        })}
+      {/* Horizontal Tabs: General | Integrations | Team | Alerts | Billing */}
+      <div style={{ display: 'flex', gap: 0, marginBottom: 28, borderBottom: `1px solid ${T.border}`, overflowX: 'auto' }}>
+        {[
+          { id: 'integrations', label: 'General' },
+          { id: 'team', label: 'Integrations' },
+          { id: 'alerts', label: 'Team' },
+          { id: 'brand', label: 'Alerts' },
+          { id: 'billing', label: 'Billing' },
+        ].map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
+            padding: '12px 20px', fontSize: 14,
+            fontWeight: activeTab === t.id ? 600 : 400,
+            color: activeTab === t.id ? T.text : T.textMuted,
+            backgroundColor: 'transparent', border: 'none',
+            borderBottom: `2px solid ${activeTab === t.id ? T.accent : 'transparent'}`,
+            cursor: 'pointer', marginBottom: -1, whiteSpace: 'nowrap',
+            transition: 'color 0.15s, border-color 0.15s',
+          }}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
+      {/* ─── General Tab (was "integrations") ─── */}
       {activeTab === "integrations" && (
         <div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px", flexWrap: "wrap", gap: 10 }}>
-            <p style={{ fontSize: "14px", color: c.textSecondary, margin: 0 }}>
+          {/* Profile section */}
+          <ProfileTab />
+
+          <div style={{ marginTop: 32 }}>
+            <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />
+          </div>
+
+          <div style={{ marginTop: 32 }}>
+            <NotificationsTab />
+          </div>
+        </div>
+      )}
+
+      {/* ─── Integrations Tab (was "team") ─── */}
+      {activeTab === "team" && (
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 10 }}>
+            <p style={{ fontSize: 14, color: T.textSecondary, margin: 0 }}>
               Connect your marketing accounts to start syncing real data.
               {wsLoading && " Loading..."}
-              {workspace && <span style={{ color: "#10b981" }}> · {workspace.name}</span>}
+              {workspace && <span style={{ color: T.success }}> &middot; {workspace.name}</span>}
             </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 11, color: c.textMuted }}>Auto-syncs daily at 2AM UTC</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontSize: 11, color: T.textMuted }}>Auto-syncs daily at 2AM UTC</span>
               <button
                 onClick={handleSyncAll}
                 disabled={syncing === 'all'}
-                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg, #7c3aed, #4f46e5)", color: "white", fontSize: 13, fontWeight: 600, cursor: syncing === 'all' ? "wait" : "pointer", opacity: syncing === 'all' ? 0.7 : 1 }}
+                style={{
+                  ...primaryBtnStyle,
+                  padding: '8px 14px', fontSize: 13,
+                  opacity: syncing === 'all' ? 0.7 : 1,
+                  cursor: syncing === 'all' ? 'wait' : 'pointer',
+                }}
               >
                 <RefreshCw size={13} style={{ animation: syncing === 'all' ? 'spin 1s linear infinite' : 'none' }} />
                 {syncing === 'all' ? 'Syncing...' : 'Sync All Now'}
               </button>
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "16px" }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16 }}>
             {providers.map(p => {
               const Icon = p.icon;
               const connected = isConnected(p.id);
               const int = getIntegration(p.id);
               const isSyncing = syncing === p.id;
               return (
-                <div key={p.id} style={{ backgroundColor: c.bgCard, border: `1px solid ${connected && isSynced(p.id) ? 'rgba(16,185,129,0.3)' : connected ? 'rgba(245,158,11,0.4)' : c.border}`, borderRadius: "16px", padding: "24px" }}>
-                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                      <div style={{ width: "48px", height: "48px", borderRadius: "14px", backgroundColor: `${p.color}12`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <div key={p.id} style={{
+                  ...cardStyle,
+                  border: `1px solid ${connected && isSynced(p.id) ? 'rgba(16,185,129,0.3)' : connected ? 'rgba(245,158,11,0.4)' : T.border}`,
+                  padding: 24,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: `${p.color}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <img src={`https://cdn.simpleicons.org/${p.logoSlug}/${p.color.replace('#', '')}`} width={26} height={26} alt={p.name} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                       </div>
                       <div>
-                        <div style={{ fontSize: "15px", fontWeight: 700, color: c.text }}>{p.name}</div>
-                        <div style={{ fontSize: "12px", color: connected ? "#10b981" : c.textMuted, display: "flex", alignItems: "center", gap: "4px", marginTop: "2px" }}>
-                          {connected ? <><Check size={12} /> Connected{int?.display_name ? ` · ${int.display_name}` : ""}</> : <><X size={12} /> Not connected</>}
+                        <div style={{ fontSize: 15, fontWeight: 700, color: T.text }}>{p.name}</div>
+                        <div style={{ marginTop: 4 }}>
+                          <StatusPill
+                            connected={connected}
+                            label={connected ? (int?.display_name ? `Connected \u00b7 ${int.display_name}` : 'Connected') : 'Disconnected'}
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
-                  <p style={{ fontSize: "13px", color: c.textSecondary, marginBottom: "16px", lineHeight: 1.4 }}>{p.desc}</p>
+                  <p style={{ fontSize: 13, color: T.textSecondary, marginBottom: 16, lineHeight: 1.4 }}>{p.desc}</p>
                   {int?.last_sync_at && (
-                    <p style={{ fontSize: "11px", color: c.textMuted, marginBottom: "12px" }}>
+                    <p style={{ fontSize: 11, color: T.textMuted, marginBottom: 12, fontFamily: T.mono }}>
                       Last synced: {new Date(int.last_sync_at).toLocaleString()}
                     </p>
                   )}
-                  <div style={{ display: "flex", gap: "8px" }}>
+                  <div style={{ display: 'flex', gap: 8 }}>
                     <button onClick={() => (connected && isSynced(p.id)) ? null : connected ? handleSync(p.id) : handleConnect(p.id)} style={{
-                      flex: 1, padding: "10px", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: (connected && isSynced(p.id)) ? "default" : "pointer",
-                      background: (connected && isSynced(p.id)) ? "transparent" : connected ? "linear-gradient(135deg, #f59e0b, #d97706)" : "linear-gradient(135deg, #7c3aed, #4f46e5)",
-                      color: (connected && isSynced(p.id)) ? c.textSecondary : "white",
-                      border: (connected && isSynced(p.id)) ? `1px solid ${c.border}` : "none",
+                      flex: 1, padding: 10, borderRadius: 8, fontSize: 14, fontWeight: 600,
+                      cursor: (connected && isSynced(p.id)) ? 'default' : 'pointer',
+                      backgroundColor: (connected && isSynced(p.id)) ? 'transparent' : connected ? T.warning : T.accent,
+                      color: (connected && isSynced(p.id)) ? T.textSecondary : 'white',
+                      border: (connected && isSynced(p.id)) ? `1px solid ${T.borderStrong}` : 'none',
                     }}>
-                      {(connected && isSynced(p.id)) ? "Connected ✓" : connected ? "Sync Now" : "Connect"}
+                      {(connected && isSynced(p.id)) ? "Connected" : connected ? "Sync Now" : "Connect"}
                     </button>
                     {connected && (
                       <button onClick={() => handleSync(p.id)} disabled={isSyncing} style={{
-                        padding: "10px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 600, cursor: isSyncing ? "wait" : "pointer",
-                        background: c.bgInput, color: c.textSecondary, border: `1px solid ${c.border}`,
-                        display: "flex", alignItems: "center", gap: "6px", opacity: isSyncing ? 0.6 : 1,
+                        ...ghostBtnStyle,
+                        padding: '10px 16px', fontSize: 13,
+                        opacity: isSyncing ? 0.6 : 1,
+                        cursor: isSyncing ? 'wait' : 'pointer',
                       }}>
                         {isSyncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
                         {isSyncing ? "Syncing..." : "Sync Now"}
@@ -1011,8 +1193,8 @@ export default function SettingsPage() {
                     )}
                   </div>
                   {p.id === 'meta_ads' && (
-                    <div style={{ marginTop: '10px', padding: '10px 12px', borderRadius: '8px', backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', fontSize: '12px', color: '#60a5fa', lineHeight: 1.5 }}>
-                      ℹ️ After connecting, you also need to accept the <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>Meta Ad Library Terms of Service</a> to use the Competitor Ad Spy feature.
+                    <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 8, backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.2)', fontSize: 12, color: '#60a5fa', lineHeight: 1.5 }}>
+                      After connecting, you also need to accept the <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer" style={{ color: '#93c5fd', textDecoration: 'underline' }}>Meta Ad Library Terms of Service</a> to use the Competitor Ad Spy feature.
                     </div>
                   )}
                 </div>
@@ -1025,30 +1207,35 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === "team" && (
+      {/* ─── Team Tab (was "alerts") ─── */}
+      {activeTab === "alerts" && (
         <div style={{ maxWidth: 560 }}>
           {/* Slots indicator */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, marginBottom: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <Crown size={16} color="#f59e0b" />
+          <div style={{
+            ...cardStyle,
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '16px 20px', marginBottom: 20,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Crown size={16} color={T.warning} />
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>Free Plan</div>
-                <div style={{ fontSize: 12, color: c.textSecondary }}>Up to {teamData?.maxSlots || 2} additional team members</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: T.text }}>Free Plan</div>
+                <div style={{ fontSize: 12, color: T.textSecondary }}>Up to {teamData?.maxSlots || 2} additional team members</div>
               </div>
             </div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: c.text, fontFamily: "var(--font-display)" }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: T.text, fontFamily: T.mono }}>
               {teamData?.slotsUsed || 0} / {teamData?.maxSlots || 2}
-              <span style={{ fontSize: 12, color: c.textSecondary, fontFamily: "var(--font-body)", fontWeight: 400, marginLeft: 4 }}>used</span>
+              <span style={{ fontSize: 12, color: T.textSecondary, fontWeight: 400, marginLeft: 4 }}>used</span>
             </div>
           </div>
 
           {/* Invite form */}
-          <div style={{ padding: "20px 24px", borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, marginBottom: 20 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 4 }}>Invite a team member</h3>
-            <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 16 }}>They'll receive an email with a link to sign up and join your workspace.</p>
-            <form onSubmit={handleInvite} style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <div style={{ position: "relative", flex: 1, minWidth: 180 }}>
-                <Mail size={15} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#475569" }} />
+          <div style={{ ...cardStyle, padding: '20px 24px', marginBottom: 20 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 4 }}>Invite a team member</h3>
+            <p style={{ fontSize: 13, color: T.textSecondary, marginBottom: 16 }}>They&#39;ll receive an email with a link to sign up and join your workspace.</p>
+            <form onSubmit={handleInvite} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ position: 'relative', flex: 1, minWidth: 180 }}>
+                <Mail size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: T.textMuted }} />
                 <input
                   type="email"
                   value={inviteEmail}
@@ -1056,15 +1243,19 @@ export default function SettingsPage() {
                   placeholder="colleague@company.com"
                   required
                   disabled={teamData?.canInviteMore === false}
-                  style={{ width: "100%", padding: "10px 14px 10px 36px", borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 14, outline: "none", boxSizing: "border-box", opacity: teamData?.canInviteMore === false ? 0.5 : 1 }}
-                  onFocus={e => (e.target as HTMLInputElement).style.borderColor = "#7c3aed"}
-                  onBlur={e => (e.target as HTMLInputElement).style.borderColor = "#334155"}
+                  style={{
+                    ...inputBaseStyle,
+                    padding: '10px 14px 10px 36px',
+                    opacity: teamData?.canInviteMore === false ? 0.5 : 1,
+                  }}
+                  onFocus={e => (e.target as HTMLInputElement).style.borderColor = T.accent}
+                  onBlur={e => (e.target as HTMLInputElement).style.borderColor = T.border}
                 />
               </div>
               <select
                 value={inviteRole}
                 onChange={e => setInviteRole(e.target.value)}
-                style={{ padding: "10px 12px", borderRadius: 8, border: `1px solid ${c.border}`, backgroundColor: c.bgInput, color: c.text, fontSize: 13, fontWeight: 500, cursor: "pointer", outline: "none" }}
+                style={{ ...inputBaseStyle, width: 'auto', padding: '10px 12px', fontWeight: 500, cursor: 'pointer' }}
               >
                 <option value="admin">Admin</option>
                 <option value="member">Member</option>
@@ -1073,48 +1264,73 @@ export default function SettingsPage() {
               <button
                 type="submit"
                 disabled={inviting || !inviteEmail || teamData?.canInviteMore === false}
-                style={{ padding: "10px 18px", borderRadius: 8, border: "none", backgroundColor: "#7c3aed", color: "white", fontSize: 14, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6, opacity: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 0.6 : 1, whiteSpace: "nowrap" }}
+                style={{
+                  ...primaryBtnStyle,
+                  padding: '10px 18px', fontSize: 14,
+                  opacity: (inviting || !inviteEmail || teamData?.canInviteMore === false) ? 0.6 : 1,
+                  whiteSpace: 'nowrap',
+                }}
               >
-                {inviting ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Mail size={14} />}
+                {inviting ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Mail size={14} />}
                 {inviting ? "Sending..." : "Send Invite"}
               </button>
             </form>
             {teamData?.canInviteMore === false && (
-              <p style={{ fontSize: 12, color: "#f59e0b", marginTop: 10 }}>⚠️ Member limit reached. Upgrade to add more.</p>
+              <p style={{ fontSize: 12, color: T.warning, marginTop: 10 }}>Member limit reached. Upgrade to add more.</p>
             )}
             {inviteMsg && (
-              <div style={{ marginTop: 12, padding: "10px 14px", borderRadius: 8, backgroundColor: inviteMsg.ok ? "rgba(34,197,94,0.08)" : "rgba(239,68,68,0.08)", border: `1px solid ${inviteMsg.ok ? "rgba(34,197,94,0.2)" : "rgba(239,68,68,0.2)"}`, color: inviteMsg.ok ? "#22c55e" : "#f87171", fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+              <div style={{
+                marginTop: 12, padding: '10px 14px', borderRadius: 8,
+                backgroundColor: inviteMsg.ok ? T.successSubtle : T.dangerSubtle,
+                border: `1px solid ${inviteMsg.ok ? T.successBorder : T.dangerBorder}`,
+                color: inviteMsg.ok ? T.success : '#f87171',
+                fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
+              }}>
                 {inviteMsg.ok ? <Check size={13} /> : <X size={13} />}
                 {inviteMsg.text}
               </div>
             )}
           </div>
 
-          {/* Active members */}
+          {/* Active members — avatar + name + role badge rows */}
           {teamData?.members && teamData.members.length > 0 && (
-            <div style={{ padding: "20px 24px", borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, marginBottom: 20 }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Team Members</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ ...cardStyle, padding: '20px 24px', marginBottom: 20 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 16 }}>Team Members</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {teamData.members.map((m: any) => {
                   const roleColors: Record<string, { bg: string; color: string }> = {
-                    owner: { bg: "rgba(245,158,11,0.1)", color: "#f59e0b" },
-                    admin: { bg: "rgba(124,58,237,0.1)", color: "#7c3aed" },
-                    member: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6" },
-                    viewer: { bg: "rgba(113,113,122,0.1)", color: "#71717a" },
+                    owner: { bg: T.warningSubtle, color: T.warning },
+                    admin: { bg: T.accentSubtle, color: T.accent },
+                    member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
+                    viewer: { bg: 'rgba(85,85,85,0.08)', color: T.textMuted },
                   };
                   const rc = roleColors[m.role] || roleColors.member;
                   return (
-                    <div key={m.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, backgroundColor: c.bgPage, border: `1px solid ${c.borderSubtle}` }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: "50%", backgroundColor: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
+                    <div key={m.id} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 14px', borderRadius: 8,
+                      backgroundColor: T.surfaceElevated, border: `1px solid ${T.border}`,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                          width: 34, height: 34, borderRadius: '50%',
+                          backgroundColor: T.accentSubtle,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 13, fontWeight: 700, color: T.accent,
+                        }}>
                           {(m.user_id || '?').substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <div style={{ fontSize: 14, color: c.text }}>{m.user_id === workspace?.owner_id || m.user_id === workspace?.created_by ? 'You (Owner)' : `Member`}</div>
-                          <div style={{ fontSize: 11, color: c.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
+                          <div style={{ fontSize: 14, fontWeight: 500, color: T.text }}>
+                            {m.user_id === workspace?.owner_id || m.user_id === workspace?.created_by ? 'You (Owner)' : 'Member'}
+                          </div>
+                          <div style={{ fontSize: 11, color: T.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
                         </div>
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, backgroundColor: rc.bg, color: rc.color, textTransform: "capitalize" }}>
+                      <span style={{
+                        fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                        backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
+                      }}>
                         {m.role}
                       </span>
                     </div>
@@ -1126,33 +1342,49 @@ export default function SettingsPage() {
 
           {/* Pending invites */}
           {teamData?.invites && teamData.invites.length > 0 && (
-            <div style={{ padding: "20px 24px", borderRadius: 12, backgroundColor: c.bgCard, border: `1px solid ${c.border}` }}>
-              <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Pending Invites</h3>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ ...cardStyle, padding: '20px 24px' }}>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: T.text, marginBottom: 16 }}>Pending Invites</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {teamData.invites.map((inv: any) => {
                   const roleColors: Record<string, { bg: string; color: string }> = {
-                    admin: { bg: "rgba(124,58,237,0.1)", color: "#7c3aed" },
-                    member: { bg: "rgba(59,130,246,0.1)", color: "#3b82f6" },
-                    viewer: { bg: "rgba(113,113,122,0.1)", color: "#71717a" },
+                    admin: { bg: T.accentSubtle, color: T.accent },
+                    member: { bg: 'rgba(59,130,246,0.08)', color: '#3b82f6' },
+                    viewer: { bg: 'rgba(85,85,85,0.08)', color: T.textMuted },
                   };
                   const rc = roleColors[inv.role] || roleColors.member;
                   return (
-                    <div key={inv.id || inv.email} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", borderRadius: 8, backgroundColor: c.bgPage, border: `1px solid ${c.borderSubtle}` }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: "50%", backgroundColor: "#1e293b", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
+                    <div key={inv.id || inv.email} style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 14px', borderRadius: 8,
+                      backgroundColor: T.surfaceElevated, border: `1px solid ${T.border}`,
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{
+                          width: 34, height: 34, borderRadius: '50%',
+                          backgroundColor: T.accentSubtle,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 13, fontWeight: 700, color: T.accent,
+                        }}>
                           {inv.email[0].toUpperCase()}
                         </div>
                         <div>
-                          <div style={{ fontSize: 14, color: c.text }}>{inv.email}</div>
-                          <div style={{ fontSize: 11, color: c.textMuted }}>Invited {new Date(inv.created_at).toLocaleDateString()}</div>
+                          <div style={{ fontSize: 14, fontWeight: 500, color: T.text }}>{inv.email}</div>
+                          <div style={{ fontSize: 11, color: T.textMuted }}>Invited {new Date(inv.created_at).toLocaleDateString()}</div>
                         </div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, backgroundColor: rc.bg, color: rc.color, textTransform: "capitalize" }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                          backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
+                        }}>
                           {inv.role || 'member'}
                         </span>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 6, backgroundColor: inv.status === "accepted" ? "rgba(34,197,94,0.1)" : "rgba(245,158,11,0.1)", color: inv.status === "accepted" ? "#22c55e" : "#f59e0b" }}>
-                          {inv.status === "accepted" ? "Joined" : "Pending"}
+                        <span style={{
+                          fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                          backgroundColor: inv.status === 'accepted' ? T.successSubtle : T.warningSubtle,
+                          color: inv.status === 'accepted' ? T.success : T.warning,
+                        }}>
+                          {inv.status === 'accepted' ? 'Joined' : 'Pending'}
                         </span>
                       </div>
                     </div>
@@ -1164,22 +1396,18 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === "brand" && <BrandTab workspace={workspace} onSaved={refetchWorkspace} onUpdate={setWorkspace} />}
+      {/* ─── Alerts Tab (was "brand") ─── */}
+      {activeTab === "brand" && workspace?.id && <AlertsTab workspaceId={workspace.id} />}
 
-      {activeTab === "profile" && <ProfileTab />}
-
-      {activeTab === "notifications" && <NotificationsTab />}
-
+      {/* ─── Billing Tab ─── */}
       {activeTab === "billing" && <BillingTab />}
 
-      {activeTab === "alerts" && workspace?.id && <AlertsTab workspaceId={workspace.id} />}
-
-      {activeTab !== "integrations" && activeTab !== "brand" && activeTab !== "profile" && activeTab !== "notifications" && activeTab !== "billing" && activeTab !== "team" && activeTab !== "alerts" && (
-        <div style={{ textAlign: "center", padding: "60px 20px", borderRadius: "16px", border: `1px dashed ${c.border}` }}>
-          <p style={{ fontSize: "15px", color: c.textMuted }}>Coming soon — {activeTab} settings</p>
+      {/* Fallback for any unmapped tab */}
+      {activeTab !== "integrations" && activeTab !== "team" && activeTab !== "alerts" && activeTab !== "brand" && activeTab !== "billing" && (
+        <div style={{ textAlign: 'center', padding: '60px 20px', borderRadius: 12, border: `1px dashed ${T.border}` }}>
+          <p style={{ fontSize: 15, color: T.textMuted }}>Coming soon &mdash; {activeTab} settings</p>
         </div>
       )}
     </div>
   );
 }
-

@@ -5,7 +5,7 @@ import { Upload, Check, Search, BarChart3, Target, Share2, ChevronRight, Loader2
 import { supabase } from '@/lib/supabase';
 
 const BRAND_COLORS = [
-  { label: 'Purple', value: '#7C3AED' },
+  { label: 'Indigo', value: '#6366F1' },
   { label: 'Blue', value: '#3b82f6' },
   { label: 'Green', value: '#22c55e' },
   { label: 'Orange', value: '#f59e0b' },
@@ -24,7 +24,7 @@ export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
   const [brandName, setBrandName] = useState('');
-  const [brandColor, setBrandColor] = useState('#7C3AED');
+  const [brandColor, setBrandColor] = useState('#6366F1');
   const [logoUrl, setLogoUrl] = useState('');
   const [logoPreview, setLogoPreview] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -101,17 +101,17 @@ export default function OnboardingPage() {
     display: 'flex', alignItems: 'center' as const, justifyContent: 'center',
     fontSize: '14px', fontWeight: 700,
     fontFamily: 'var(--font-display)',
-    backgroundColor: step > n ? '#10B981' : step === n ? '#7C3AED' : '#1E293B',
-    color: step >= n ? 'white' : '#64748B',
-    border: step > n ? 'none' : step === n ? 'none' : '1px solid #334155',
+    backgroundColor: step > n ? '#10B981' : step === n ? '#6366F1' : '#111111',
+    color: step >= n ? 'white' : '#888888',
+    border: step > n ? 'none' : step === n ? 'none' : '1px solid #222222',
   });
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#0F172A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'var(--font-body)' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0A0A0A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px', fontFamily: 'var(--font-body)' }}>
       {/* Header */}
       <div style={{ marginBottom: '40px' }}>
         <span style={{ fontSize: '28px', fontWeight: 800, letterSpacing: '-1.5px', fontFamily: 'var(--font-display)' }}>
-          <span style={{ color: '#7C3AED' }}>L</span><span style={{ color: '#F8FAFC' }}>umnix</span>
+          <span style={{ color: '#6366F1' }}>L</span><span style={{ color: '#FAFAFA' }}>umnix</span>
         </span>
       </div>
 
@@ -122,49 +122,51 @@ export default function OnboardingPage() {
             <div style={stepStyle(n)}>
               {step > n ? <Check size={16} /> : n}
             </div>
-            {i < 2 && <div style={{ width: '48px', height: '2px', backgroundColor: step > n ? '#10B981' : '#334155' }} />}
+            {i < 2 && <div style={{ width: '48px', height: '2px', backgroundColor: step > n ? '#10B981' : '#333333' }} />}
           </div>
         ))}
       </div>
 
       {/* Card */}
-      <div style={{ width: '100%', maxWidth: '520px', backgroundColor: '#1E293B', border: '1px solid #334155', borderRadius: '20px', padding: '36px' }}>
+      <div style={{ width: '100%', maxWidth: '520px', backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: '36px' }}>
 
         {/* Step 1: Brand Setup */}
         {step === 1 && (
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#F8FAFC', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Set up your brand</h1>
-            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '28px' }}>This personalizes your Lumnix dashboard</p>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#FAFAFA', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Set up your brand</h1>
+            <p style={{ fontSize: '14px', color: '#888888', marginBottom: '28px' }}>This personalizes your Lumnix dashboard</p>
 
             {/* Brand Name */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginBottom: '8px' }}>Brand Name</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#888888', marginBottom: '8px' }}>Brand Name</label>
               <input
                 type="text"
                 placeholder="e.g. Acme Corp"
                 value={brandName}
                 onChange={e => setBrandName(e.target.value)}
-                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: '#0F172A', color: '#F8FAFC', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)' }}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #222222', backgroundColor: '#111111', color: '#FAFAFA', fontSize: '14px', outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-body)', transition: 'border-color 0.15s' }}
+                onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
+                onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
               />
             </div>
 
             {/* Logo Upload */}
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginBottom: '8px' }}>Logo (optional)</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#888888', marginBottom: '8px' }}>Logo (optional)</label>
               <div
                 onClick={() => fileRef.current?.click()}
-                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: '8px', border: '2px dashed #334155', cursor: 'pointer', backgroundColor: '#0F172A' }}
+                style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: '8px', border: '2px dashed #333333', cursor: 'pointer', backgroundColor: '#0A0A0A' }}
               >
                 {logoPreview ? (
                   <img src={logoPreview} alt="Logo preview" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
                 ) : (
-                  <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#1E293B', border: '1px solid #334155', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    {uploading ? <Loader2 size={20} color="#64748B" style={{ animation: 'spin 1s linear infinite' }} /> : <Upload size={20} color="#64748B" />}
+                  <div style={{ width: '48px', height: '48px', borderRadius: '8px', backgroundColor: '#111111', border: '1px solid #222222', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {uploading ? <Loader2 size={20} color="#888888" style={{ animation: 'spin 1s linear infinite' }} /> : <Upload size={20} color="#888888" />}
                   </div>
                 )}
                 <div>
-                  <div style={{ fontSize: '14px', color: '#94A3B8', fontWeight: 500 }}>{uploading ? 'Uploading...' : logoPreview ? 'Logo uploaded' : 'Click to upload logo'}</div>
-                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>PNG, JPG up to 2MB</div>
+                  <div style={{ fontSize: '14px', color: '#888888', fontWeight: 500 }}>{uploading ? 'Uploading...' : logoPreview ? 'Logo uploaded' : 'Click to upload logo'}</div>
+                  <div style={{ fontSize: '12px', color: '#555555', marginTop: '2px' }}>PNG, JPG up to 2MB</div>
                 </div>
               </div>
               <input
@@ -178,7 +180,7 @@ export default function OnboardingPage() {
 
             {/* Brand Color */}
             <div style={{ marginBottom: '28px' }}>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#94A3B8', marginBottom: '10px' }}>Brand Color</label>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, color: '#888888', marginBottom: '10px' }}>Brand Color</label>
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {BRAND_COLORS.map(c => (
                   <button
@@ -201,7 +203,7 @@ export default function OnboardingPage() {
             </div>
 
             {error && (
-              <div style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', fontSize: '13px' }}>
+              <div style={{ marginBottom: '16px', padding: '10px 14px', borderRadius: '8px', backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)', color: '#EF4444', fontSize: '13px' }}>
                 {error}
               </div>
             )}
@@ -209,7 +211,9 @@ export default function OnboardingPage() {
             <button
               onClick={handleStep1Submit}
               disabled={saving}
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: 'white', fontSize: '14px', fontWeight: 600, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-body)' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#6366F1', color: 'white', fontSize: '14px', fontWeight: 600, cursor: saving ? 'wait' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-body)', transition: 'background-color 0.15s' }}
+              onMouseEnter={e => { if (!saving) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4F46E5'; }}
+              onMouseLeave={e => { if (!saving) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#6366F1'; }}
             >
               {saving ? <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> : null}
               {saving ? 'Saving...' : 'Continue'}
@@ -221,25 +225,27 @@ export default function OnboardingPage() {
         {/* Step 2: Connect Integrations */}
         {step === 2 && (
           <div>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#F8FAFC', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Connect your data</h1>
-            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '28px' }}>Connect your marketing accounts to start seeing real data. You can always do this later in Settings.</p>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#FAFAFA', marginBottom: '6px', fontFamily: 'var(--font-display)' }}>Connect your data</h1>
+            <p style={{ fontSize: '14px', color: '#888888', marginBottom: '28px' }}>Connect your marketing accounts to start seeing real data. You can always do this later in Settings.</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '28px' }}>
               {INTEGRATIONS.map(int => {
                 const Icon = int.icon;
                 return (
-                  <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: '12px', border: '1px solid #334155', backgroundColor: '#0F172A' }}>
+                  <div key={int.id} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px', borderRadius: 12, border: '1px solid #222222', backgroundColor: '#0A0A0A' }}>
                     <div style={{ width: '40px', height: '40px', borderRadius: '10px', backgroundColor: `${int.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                       <Icon size={20} color={int.color} />
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#F8FAFC' }}>{int.name}</div>
-                      <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{int.desc}</div>
+                      <div style={{ fontSize: '14px', fontWeight: 600, color: '#FAFAFA' }}>{int.name}</div>
+                      <div style={{ fontSize: '12px', color: '#888888', marginTop: '2px' }}>{int.desc}</div>
                     </div>
                     <button
                       onClick={() => handleConnect(int.id)}
                       disabled={connecting === int.id}
-                      style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, fontFamily: 'var(--font-body)' }}
+                      style={{ padding: '8px 16px', borderRadius: '8px', border: 'none', backgroundColor: '#6366F1', color: 'white', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, fontFamily: 'var(--font-body)', transition: 'background-color 0.15s' }}
+                      onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4F46E5'}
+                      onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#6366F1'}
                     >
                       {connecting === int.id ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : null}
                       Connect
@@ -251,7 +257,9 @@ export default function OnboardingPage() {
 
             <button
               onClick={() => setStep(3)}
-              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: 'transparent', color: '#94A3B8', fontSize: '14px', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)' }}
+              style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #222222', backgroundColor: 'transparent', color: '#888888', fontSize: '14px', fontWeight: 500, cursor: 'pointer', fontFamily: 'var(--font-body)', transition: 'background-color 0.15s' }}
+              onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1A1A1A'}
+              onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'}
             >
               Skip for now
             </button>
@@ -261,16 +269,18 @@ export default function OnboardingPage() {
         {/* Step 3: Done */}
         {step === 3 && (
           <div style={{ textAlign: 'center' }}>
-            <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'rgba(16,185,129,0.15)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+            <div style={{ width: '72px', height: '72px', borderRadius: '50%', backgroundColor: 'rgba(16,185,129,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
               <Check size={36} color="#10B981" />
             </div>
-            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#F8FAFC', marginBottom: '8px', fontFamily: 'var(--font-display)' }}>You&apos;re all set!</h1>
-            <p style={{ fontSize: '14px', color: '#64748B', marginBottom: '32px', lineHeight: 1.6 }}>
+            <h1 style={{ fontSize: '22px', fontWeight: 800, color: '#FAFAFA', marginBottom: '8px', fontFamily: 'var(--font-display)' }}>You&apos;re all set!</h1>
+            <p style={{ fontSize: '14px', color: '#888888', marginBottom: '32px', lineHeight: 1.6 }}>
               Your workspace is ready. Head to your dashboard to explore your marketing data and AI insights.
             </p>
             <button
               onClick={() => router.push('/dashboard')}
-              style={{ width: '100%', padding: '13px', borderRadius: '8px', border: 'none', backgroundColor: '#7C3AED', color: 'white', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-body)' }}
+              style={{ width: '100%', padding: '13px', borderRadius: '8px', border: 'none', backgroundColor: '#6366F1', color: 'white', fontSize: '15px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-body)', transition: 'background-color 0.15s' }}
+              onMouseEnter={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#4F46E5'}
+              onMouseLeave={e => (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#6366F1'}
             >
               Go to Dashboard <ChevronRight size={18} />
             </button>
@@ -279,7 +289,7 @@ export default function OnboardingPage() {
       </div>
 
       {step < 3 && (
-        <p style={{ marginTop: '20px', fontSize: '13px', color: '#64748B' }}>
+        <p style={{ marginTop: '20px', fontSize: '13px', color: '#888888' }}>
           Step {step} of 3
         </p>
       )}

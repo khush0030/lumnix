@@ -1,6 +1,6 @@
 'use client';
 import { useState, useMemo, useCallback } from 'react';
-import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles, Calendar, ChevronDown, FileOutput } from 'lucide-react';
+import { FileText, Download, BarChart3, Search, TrendingUp, Loader2, CheckCircle2, FileDown, Sparkles, Calendar, ChevronDown, FileOutput, Eye, Layout } from 'lucide-react';
 import { PageShell } from '@/components/PageShell';
 import { useWorkspace, useGSCData, useGA4Data, DateRangeParams } from '@/lib/hooks';
 import { useWorkspaceCtx } from '@/lib/workspace-context';
@@ -79,7 +79,7 @@ function buildSEOReport(gscKeywords: any[], workspace: any, periodLabel?: string
 <meta charset="utf-8">
 <title>${name} — SEO Performance Report</title>
 <style>
-  
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); min-height: 260px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -272,7 +272,7 @@ function buildAnalyticsReport(
 <meta charset="utf-8">
 <title>${name} — Traffic & Analytics Report</title>
 <style>
-  
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%); min-height: 260px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -466,7 +466,7 @@ function buildFullReport(
 <meta charset="utf-8">
 <title>${name} — Full Marketing Intelligence Report</title>
 <style>
-  
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fff; color: #111827; }
   .cover { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 60%, #0f2c2c 100%); min-height: 320px; padding: 48px; display: flex; flex-direction: column; justify-content: space-between; }
@@ -788,8 +788,163 @@ const pdfSections = [
   { id: 'insights', label: 'AI Insights', desc: 'Wins, warnings, opportunities' },
 ];
 
+/* ── Skeleton Preview Block ── */
+function SkeletonLine({ width, height = 10, mb = 8 }: { width: string | number; height?: number; mb?: number }) {
+  return (
+    <div style={{
+      width: typeof width === 'number' ? `${width}%` : width,
+      height,
+      borderRadius: 4,
+      backgroundColor: '#222222',
+      marginBottom: mb,
+    }} />
+  );
+}
+
+function PreviewSkeleton({ selectedReport, selectedSections }: { selectedReport: string | null; selectedSections: Set<string> }) {
+  const rt = reportTypes.find(r => r.id === selectedReport);
+  const sectionNames = selectedReport
+    ? (rt?.sections || []).filter((_, i) => {
+        const sectionIds = ['overview', 'ga4', 'gsc', 'insights'];
+        // Map report sections back to pdfSection ids loosely
+        return true;
+      })
+    : [];
+
+  return (
+    <div style={{
+      backgroundColor: '#111111',
+      border: '1px solid #222222',
+      borderRadius: 12,
+      overflow: 'hidden',
+      height: '100%',
+      minHeight: 500,
+    }}>
+      {/* Preview header bar */}
+      <div style={{
+        padding: '12px 16px',
+        borderBottom: '1px solid #222222',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Eye size={14} color="#555555" />
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#555555', letterSpacing: '0.5px', textTransform: 'uppercase' as const }}>Live Preview</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: selectedReport ? '#10B981' : '#555555' }} />
+          <span style={{ fontSize: 11, color: '#555555' }}>{selectedReport ? 'Ready' : 'Select a report'}</span>
+        </div>
+      </div>
+
+      {/* Mockup PDF page */}
+      <div style={{ padding: 20 }}>
+        <div style={{
+          backgroundColor: '#0A0A0A',
+          border: '1px solid #222222',
+          borderRadius: 8,
+          padding: 24,
+          minHeight: 420,
+        }}>
+          {!selectedReport ? (
+            <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', height: 380, gap: 12 }}>
+              <Layout size={32} color="#333333" />
+              <span style={{ fontSize: 13, color: '#555555' }}>Select a report type to preview</span>
+            </div>
+          ) : (
+            <>
+              {/* Fake cover block */}
+              <div style={{
+                background: 'linear-gradient(135deg, #1A1A1A, rgba(99,102,241,0.1))',
+                borderRadius: 8,
+                padding: 20,
+                marginBottom: 20,
+                border: '1px solid #222222',
+              }}>
+                <SkeletonLine width="40%" height={8} mb={12} />
+                <SkeletonLine width="70%" height={14} mb={6} />
+                <SkeletonLine width="50%" height={10} mb={16} />
+                <div style={{ display: 'flex', gap: 16 }}>
+                  <SkeletonLine width={60} height={6} mb={0} />
+                  <SkeletonLine width={80} height={6} mb={0} />
+                  <SkeletonLine width={50} height={6} mb={0} />
+                </div>
+              </div>
+
+              {/* KPI row skeleton */}
+              {selectedSections.has('overview') && (
+                <div style={{ marginBottom: 18 }}>
+                  <SkeletonLine width="30%" height={6} mb={10} />
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8 }}>
+                    {[1,2,3,4].map(i => (
+                      <div key={i} style={{ backgroundColor: '#1A1A1A', borderRadius: 6, padding: 12, border: '1px solid #222222' }}>
+                        <SkeletonLine width="60%" height={12} mb={4} />
+                        <SkeletonLine width="80%" height={6} mb={0} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* GSC table skeleton */}
+              {selectedSections.has('gsc') && (
+                <div style={{ marginBottom: 18 }}>
+                  <SkeletonLine width="25%" height={6} mb={10} />
+                  {[1,2,3,4,5].map(i => (
+                    <div key={i} style={{ display: 'flex', gap: 12, padding: '6px 0', borderBottom: '1px solid #1A1A1A' }}>
+                      <SkeletonLine width="35%" height={6} mb={0} />
+                      <SkeletonLine width="15%" height={6} mb={0} />
+                      <SkeletonLine width="15%" height={6} mb={0} />
+                      <SkeletonLine width="10%" height={6} mb={0} />
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* GA4 chart skeleton */}
+              {selectedSections.has('ga4') && (
+                <div style={{ marginBottom: 18 }}>
+                  <SkeletonLine width="20%" height={6} mb={10} />
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, height: 50 }}>
+                    {[30,50,40,65,55,80,70,45,60,75,50,40].map((h, i) => (
+                      <div key={i} style={{ flex: 1, height: `${h}%`, backgroundColor: '#1A1A1A', borderRadius: 2 }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* AI insights skeleton */}
+              {selectedSections.has('insights') && (
+                <div>
+                  <SkeletonLine width="28%" height={6} mb={10} />
+                  {[1,2].map(i => (
+                    <div key={i} style={{ display: 'flex', gap: 10, padding: 10, borderRadius: 6, border: '1px solid #1A1A1A', marginBottom: 8, backgroundColor: '#111111' }}>
+                      <div style={{ width: 20, height: 20, borderRadius: 5, backgroundColor: '#1A1A1A', flexShrink: 0 }} />
+                      <div style={{ flex: 1 }}>
+                        <SkeletonLine width="50%" height={7} mb={6} />
+                        <SkeletonLine width="90%" height={5} mb={3} />
+                        <SkeletonLine width="70%" height={5} mb={0} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {selectedSections.size === 0 && (
+                <div style={{ display: 'flex', flexDirection: 'column' as const, alignItems: 'center', justifyContent: 'center', height: 200, gap: 8 }}>
+                  <span style={{ fontSize: 12, color: '#555555' }}>Select sections to include</span>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace: any; days: number; periodLabel: string; hasData: boolean }) {
-  const { c } = useTheme();
   const [selected, setSelected] = useState<Set<string>>(new Set(['overview', 'ga4', 'gsc', 'insights']));
   const [generating, setGenerating] = useState(false);
 
@@ -842,61 +997,75 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
   }, [selected, workspace, days, periodLabel]);
 
   return (
-    <div style={{ marginTop: 24, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 16, padding: 24 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(124,58,237,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <FileOutput size={22} color="#7c3aed" />
+    <div style={{ marginTop: 28, backgroundColor: '#111111', border: '1px solid #222222', borderRadius: 12, padding: 28 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(99,102,241,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <FileOutput size={22} color="#6366F1" />
         </div>
         <div>
-          <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 2 }}>Custom PDF Report</h3>
-          <p style={{ fontSize: 12, color: c.textMuted, margin: 0 }}>Select sections and generate a branded PDF report</p>
+          <h3 style={{ fontSize: 15, fontWeight: 700, color: '#FAFAFA', marginBottom: 2 }}>Custom PDF Report</h3>
+          <p style={{ fontSize: 12, color: '#555555', margin: 0 }}>Select sections and generate a branded PDF report</p>
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 18 }}>
-        {pdfSections.map(s => (
-          <button
-            key={s.id}
-            onClick={() => toggle(s.id)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              padding: '12px 14px', borderRadius: 10,
-              border: `1px solid ${selected.has(s.id) ? '#7c3aed' : c.border}`,
-              backgroundColor: selected.has(s.id) ? 'rgba(124,58,237,0.08)' : 'transparent',
-              cursor: 'pointer', textAlign: 'left',
-            }}
-          >
-            <div style={{
-              width: 18, height: 18, borderRadius: 5,
-              border: `2px solid ${selected.has(s.id) ? '#7c3aed' : c.border}`,
-              backgroundColor: selected.has(s.id) ? '#7c3aed' : 'transparent',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
-              {selected.has(s.id) && <CheckCircle2 size={12} color="white" />}
-            </div>
-            <div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: c.text }}>{s.label}</div>
-              <div style={{ fontSize: 11, color: c.textMuted }}>{s.desc}</div>
-            </div>
-          </button>
-        ))}
-      </div>
+      {/* Split layout: left config + right preview */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        {/* Left: Section checkboxes */}
+        <div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginBottom: 18 }}>
+            {pdfSections.map(s => (
+              <button
+                key={s.id}
+                onClick={() => toggle(s.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '14px 16px', borderRadius: 8,
+                  border: `1px solid ${selected.has(s.id) ? '#6366F1' : '#222222'}`,
+                  backgroundColor: selected.has(s.id) ? 'rgba(99,102,241,0.08)' : 'transparent',
+                  cursor: 'pointer', textAlign: 'left' as const,
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <div style={{
+                  width: 18, height: 18, borderRadius: 5,
+                  border: `2px solid ${selected.has(s.id) ? '#6366F1' : '#333333'}`,
+                  backgroundColor: selected.has(s.id) ? '#6366F1' : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  transition: 'all 0.15s ease',
+                }}>
+                  {selected.has(s.id) && <CheckCircle2 size={12} color="white" />}
+                </div>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: '#FAFAFA' }}>{s.label}</div>
+                  <div style={{ fontSize: 11, color: '#555555' }}>{s.desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
 
-      <button
-        onClick={handleGeneratePDF}
-        disabled={generating || selected.size === 0 || !hasData}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-          width: '100%', padding: 12, borderRadius: 10, border: 'none',
-          background: 'linear-gradient(135deg, #7c3aed, #4f46e5)',
-          color: 'white', fontSize: 14, fontWeight: 700,
-          cursor: (generating || selected.size === 0 || !hasData) ? 'not-allowed' : 'pointer',
-          opacity: (selected.size === 0 || !hasData) ? 0.4 : 1,
-        }}
-      >
-        {generating ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={15} />}
-        {generating ? 'Generating PDF...' : `Generate PDF (${selected.size} section${selected.size !== 1 ? 's' : ''})`}
-      </button>
+          <button
+            onClick={handleGeneratePDF}
+            disabled={generating || selected.size === 0 || !hasData}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', padding: '12px 16px', borderRadius: 8, border: 'none',
+              backgroundColor: (selected.size === 0 || !hasData) ? '#333333' : '#6366F1',
+              color: 'white', fontSize: 14, fontWeight: 700,
+              cursor: (generating || selected.size === 0 || !hasData) ? 'not-allowed' : 'pointer',
+              opacity: (selected.size === 0 || !hasData) ? 0.4 : 1,
+              transition: 'background-color 0.15s ease',
+            }}
+            onMouseEnter={e => { if (selected.size > 0 && hasData && !generating) (e.target as HTMLButtonElement).style.backgroundColor = '#4F46E5'; }}
+            onMouseLeave={e => { if (selected.size > 0 && hasData && !generating) (e.target as HTMLButtonElement).style.backgroundColor = '#6366F1'; }}
+          >
+            {generating ? <Loader2 size={15} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={15} />}
+            {generating ? 'Generating PDF...' : `Generate & Download (${selected.size} section${selected.size !== 1 ? 's' : ''})`}
+          </button>
+        </div>
+
+        {/* Right: Live preview skeleton */}
+        <PreviewSkeleton selectedReport="full" selectedSections={selected} />
+      </div>
     </div>
   );
 }
@@ -911,6 +1080,7 @@ export default function ReportsPage() {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [showCustom, setShowCustom] = useState(false);
+  const [selectedReportType, setSelectedReportType] = useState<string | null>(null);
 
   const dateRange = useMemo((): DateRangeParams => {
     const preset = DATE_PRESETS[selectedPreset];
@@ -981,48 +1151,72 @@ export default function ReportsPage() {
   return (
     <PageShell title="Reports" description="Client-ready marketing reports with real data and AI insights" icon={FileText} badge="Client-Ready">
       {/* ── Date Range Picker ── */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: c.textSecondary, fontSize: 13, fontWeight: 600 }}>
-          <Calendar size={15} />
-          Reporting Period:
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#888888', fontSize: 13, fontWeight: 600 }}>
+          <Calendar size={15} color="#888888" />
+          <span>Reporting Period</span>
         </div>
-        <div style={{ position: 'relative' }}>
+
+        {/* Date preset ghost buttons */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {DATE_PRESETS.filter(p => p.days > 0).map((p, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                const realIndex = DATE_PRESETS.findIndex(dp => dp.days === p.days);
+                setSelectedPreset(realIndex);
+                setShowCustom(false);
+              }}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 8,
+                border: `1px solid ${DATE_PRESETS[selectedPreset].days === p.days ? '#6366F1' : '#333333'}`,
+                backgroundColor: DATE_PRESETS[selectedPreset].days === p.days ? 'rgba(99,102,241,0.08)' : 'transparent',
+                color: DATE_PRESETS[selectedPreset].days === p.days ? '#6366F1' : '#888888',
+                fontSize: 12,
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={e => {
+                if (DATE_PRESETS[selectedPreset].days !== p.days) {
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#1A1A1A';
+                }
+              }}
+              onMouseLeave={e => {
+                if (DATE_PRESETS[selectedPreset].days !== p.days) {
+                  (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              {p.label.replace('Last ', '')}
+            </button>
+          ))}
           <button
-            onClick={() => { setShowPresetMenu(p => !p); }}
+            onClick={() => {
+              setSelectedPreset(5);
+              setShowCustom(true);
+            }}
             style={{
-              display: 'flex', alignItems: 'center', gap: 8,
-              padding: '8px 14px', borderRadius: 9,
-              backgroundColor: c.bgInput, border: `1px solid ${c.border}`,
-            color: c.text, fontSize: 13, fontWeight: 600, cursor: 'pointer',
+              padding: '6px 12px',
+              borderRadius: 8,
+              border: `1px solid ${showCustom ? '#6366F1' : '#333333'}`,
+              backgroundColor: showCustom ? 'rgba(99,102,241,0.08)' : 'transparent',
+              color: showCustom ? '#6366F1' : '#888888',
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.15s ease',
+            }}
+            onMouseEnter={e => {
+              if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = '#1A1A1A';
+            }}
+            onMouseLeave={e => {
+              if (!showCustom) (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
             }}
           >
-            <span>{DATE_PRESETS[selectedPreset].days === 0 && customStart ? `${customStart} → ${customEnd}` : DATE_PRESETS[selectedPreset].label}</span>
-            <ChevronDown size={13} color={c.textMuted} />
+            Custom
           </button>
-          {showPresetMenu && (
-            <div style={{
-              position: 'absolute', top: '110%', left: 0, zIndex: 50,
-              backgroundColor: c.bgCard, border: `1px solid ${c.border}`,
-              borderRadius: 10, overflow: 'hidden', minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-            }}>
-              {DATE_PRESETS.map((p, i) => (
-                <button key={i} onClick={() => {
-                  setSelectedPreset(i);
-                  setShowPresetMenu(false);
-                  if (p.days === 0) setShowCustom(true);
-                  else setShowCustom(false);
-                }} style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  padding: '10px 16px', fontSize: 13, fontWeight: 500,
-                  color: selectedPreset === i ? '#7c3aed' : c.text,
-                  backgroundColor: selectedPreset === i ? 'rgba(124,58,237,0.1)' : 'transparent',
-                  border: 'none', cursor: 'pointer',
-                }}>
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          )}
         </div>
 
         {showCustom && (
@@ -1032,116 +1226,209 @@ export default function ReportsPage() {
               value={customStart}
               onChange={e => setCustomStart(e.target.value)}
               style={{
-                padding: '7px 10px', borderRadius: 8, border: '1px solid #3f3f46',
-                backgroundColor: c.bgInput, color: c.text, fontSize: 13,
+                padding: '7px 10px', borderRadius: 8,
+                border: '1px solid #222222',
+                backgroundColor: '#111111', color: '#FAFAFA', fontSize: 13,
+                outline: 'none',
               }}
+              onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
+              onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
             />
-            <span style={{ color: c.textMuted, fontSize: 13 }}>→</span>
+            <span style={{ color: '#555555', fontSize: 13 }}>to</span>
             <input
               type="date"
               value={customEnd}
               onChange={e => setCustomEnd(e.target.value)}
               style={{
-                padding: '7px 10px', borderRadius: 8, border: '1px solid #3f3f46',
-                backgroundColor: c.bgInput, color: c.text, fontSize: 13,
+                padding: '7px 10px', borderRadius: 8,
+                border: '1px solid #222222',
+                backgroundColor: '#111111', color: '#FAFAFA', fontSize: 13,
+                outline: 'none',
               }}
+              onFocus={e => (e.target as HTMLInputElement).style.borderColor = '#6366F1'}
+              onBlur={e => (e.target as HTMLInputElement).style.borderColor = '#222222'}
             />
           </div>
         )}
 
-        {loading && <Loader2 size={14} color="#7c3aed" style={{ animation: 'spin 1s linear infinite' }} />}
+        {loading && <Loader2 size={14} color="#6366F1" style={{ animation: 'spin 1s linear infinite' }} />}
         {!loading && hasData && (
-          <span style={{ fontSize: 12, color: c.textMuted }}>
+          <span style={{ fontSize: 12, color: '#555555', fontFamily: 'var(--font-mono)' }}>
             {periodLabel}
           </span>
         )}
       </div>
 
       {!hasData && !loading && (
-        <div style={{ padding: 32, borderRadius: 14, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, textAlign: 'center', marginBottom: 24 }}>
-          <FileText size={32} color="#334155" style={{ marginBottom: 12 }} />
-          <p style={{ fontSize: 15, fontWeight: 600, color: c.text, marginBottom: 6 }}>No data connected yet</p>
-          <p style={{ fontSize: 13, color: c.textSecondary, marginBottom: 14 }}>Connect and sync GSC or GA4 to generate branded reports with real data</p>
-          <a href="/dashboard/settings" style={{ fontSize: 13, color: '#7c3aed', textDecoration: 'none', fontWeight: 600 }}>Connect integrations →</a>
+        <div style={{ padding: 40, borderRadius: 12, backgroundColor: '#111111', border: '1px solid #222222', textAlign: 'center', marginBottom: 24 }}>
+          <FileText size={36} color="#333333" style={{ marginBottom: 14 }} />
+          <p style={{ fontSize: 15, fontWeight: 600, color: '#FAFAFA', marginBottom: 6 }}>No data connected yet</p>
+          <p style={{ fontSize: 13, color: '#888888', marginBottom: 16 }}>Connect and sync GSC or GA4 to generate branded reports with real data</p>
+          <a href="/dashboard/settings" style={{
+            fontSize: 13, color: '#6366F1', textDecoration: 'none', fontWeight: 600,
+            padding: '8px 16px', borderRadius: 8, border: '1px solid #6366F1',
+            backgroundColor: 'rgba(99,102,241,0.08)',
+          }}>Connect integrations</a>
         </div>
       )}
 
       {hasData && (
-        <div style={{ padding: '12px 16px', borderRadius: 10, backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', fontSize: 13, color: '#22c55e', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+        <div style={{
+          padding: '12px 16px', borderRadius: 8,
+          backgroundColor: 'rgba(16,185,129,0.06)',
+          border: '1px solid rgba(16,185,129,0.15)',
+          fontSize: 13, color: '#10B981',
+          display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24,
+        }}>
           <Sparkles size={14} />
-          <span>Data loaded — {gscKeywords.length} keywords from GSC · {hasGA4 ? 'GA4 traffic data' : 'No GA4 data'} · Reports will include {workspace?.name || 'your brand name'}</span>
+          <span>Data loaded — <strong style={{ fontFamily: 'var(--font-mono)' }}>{gscKeywords.length}</strong> keywords from GSC{hasGA4 ? ' + GA4 traffic data' : ''} — Reports include {workspace?.name || 'your brand name'}</span>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 18 }}>
-        {reportTypes.map(rt => {
-          const Icon = rt.icon;
-          return (
-            <div key={rt.id} style={{ backgroundColor: c.bgCard, border: `1px solid ${c.border}`, borderRadius: 16, padding: 24 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: `${rt.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Icon size={22} color={rt.color} />
+      {/* ── Main split layout: Report cards (left) + Preview (right) ── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
+        {/* Left panel: Report type cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#555555', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: 4 }}>
+            Choose Report Type
+          </div>
+          {reportTypes.map(rt => {
+            const Icon = rt.icon;
+            const isSelected = selectedReportType === rt.id;
+            return (
+              <button
+                key={rt.id}
+                onClick={() => setSelectedReportType(isSelected ? null : rt.id)}
+                style={{
+                  display: 'flex', alignItems: 'flex-start', gap: 14,
+                  padding: 18, borderRadius: 12, textAlign: 'left' as const,
+                  backgroundColor: isSelected ? 'rgba(99,102,241,0.08)' : '#111111',
+                  border: `1px solid ${isSelected ? '#6366F1' : '#222222'}`,
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={e => {
+                  if (!isSelected) {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1A1A1A';
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = '#333333';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!isSelected) {
+                    (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#111111';
+                    (e.currentTarget as HTMLButtonElement).style.borderColor = '#222222';
+                  }
+                }}
+              >
+                <div style={{
+                  width: 42, height: 42, borderRadius: 10,
+                  backgroundColor: isSelected ? 'rgba(99,102,241,0.12)' : '#1A1A1A',
+                  border: `1px solid ${isSelected ? 'rgba(99,102,241,0.2)' : '#222222'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <Icon size={20} color={isSelected ? '#6366F1' : '#888888'} />
                 </div>
-                <div>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 2 }}>{rt.label}</h3>
-                  <p style={{ fontSize: 12, color: c.textMuted, margin: 0 }}>{rt.desc}</p>
-                </div>
-              </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#FAFAFA', marginBottom: 4 }}>{rt.label}</div>
+                  <div style={{ fontSize: 12, color: '#888888', lineHeight: 1.5, marginBottom: 10 }}>{rt.desc}</div>
 
-              <div style={{ marginBottom: 18 }}>
-                {rt.sections.map(s => (
-                  <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 0', borderBottom: `1px solid ${c.borderSubtle}`, fontSize: 12, color: c.textSecondary }}>
-                    <CheckCircle2 size={11} color={c.textMuted} />
-                    {s}
+                  {/* Section list with custom checkboxes */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: 6 }}>
+                    {rt.sections.map(s => (
+                      <div key={s} style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        fontSize: 11, color: '#888888',
+                        padding: '3px 8px',
+                        borderRadius: 4,
+                        backgroundColor: isSelected ? 'rgba(99,102,241,0.06)' : '#0A0A0A',
+                        border: `1px solid ${isSelected ? 'rgba(99,102,241,0.15)' : '#1A1A1A'}`,
+                      }}>
+                        <div style={{
+                          width: 10, height: 10, borderRadius: 3,
+                          backgroundColor: isSelected ? '#6366F1' : '#333333',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          {isSelected && (
+                            <svg width="7" height="7" viewBox="0 0 12 12" fill="none">
+                              <path d="M2 6L5 9L10 3" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                        </div>
+                        {s}
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              <div style={{ display: 'flex', gap: 8 }}>
-                <button
-                  onClick={() => handleGenerate(rt.id, 'print')}
-                  disabled={!!generating || loading || !hasData}
-                  style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '11px', borderRadius: 9, border: 'none',
-                    background: `linear-gradient(135deg, ${rt.color}, ${rt.color}cc)`,
-                    color: 'white', fontSize: 13, fontWeight: 700,
-                    cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
-                    opacity: (!hasData || loading) ? 0.4 : 1,
-                    boxShadow: hasData ? `0 4px 14px ${rt.color}40` : 'none',
-                  }}
-                >
-                  {generating === `${rt.id}-print` ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <FileDown size={14} />}
-                  Open & Print PDF
-                </button>
-                <button
-                  onClick={() => handleGenerate(rt.id, 'download')}
-                  disabled={!!generating || loading || !hasData}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                    padding: '11px 14px', borderRadius: 9, border: '1px solid #334155',
-                    backgroundColor: c.bgInput, color: c.textSecondary, fontSize: 13, fontWeight: 600,
-                    cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
-                    opacity: (!hasData || loading) ? 0.4 : 1,
-                  }}
-                  title="Download as HTML"
-                >
-                  {generating === `${rt.id}-download` ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={13} />}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+                  {/* Action buttons */}
+                  {isSelected && (
+                    <div style={{ display: 'flex', gap: 8, marginTop: 14 }}>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleGenerate(rt.id, 'download'); }}
+                        disabled={!!generating || loading || !hasData}
+                        style={{
+                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
+                          padding: '10px 16px', borderRadius: 8, border: 'none',
+                          backgroundColor: (!hasData || loading) ? '#333333' : '#6366F1',
+                          color: 'white', fontSize: 13, fontWeight: 700,
+                          cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
+                          opacity: (!hasData || loading) ? 0.4 : 1,
+                          transition: 'background-color 0.15s ease',
+                        }}
+                        onMouseEnter={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = '#4F46E5'; }}
+                        onMouseLeave={e => { if (!generating && hasData && !loading) (e.target as HTMLButtonElement).style.backgroundColor = '#6366F1'; }}
+                      >
+                        {generating === `${rt.id}-download` ? <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> : <Download size={14} />}
+                        {generating === `${rt.id}-download` ? 'Generating...' : 'Generate & Download'}
+                      </button>
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleGenerate(rt.id, 'print'); }}
+                        disabled={!!generating || loading || !hasData}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                          padding: '10px 14px', borderRadius: 8,
+                          border: '1px solid #333333',
+                          backgroundColor: 'transparent',
+                          color: '#888888', fontSize: 13, fontWeight: 600,
+                          cursor: (!generating && !loading && hasData) ? 'pointer' : 'not-allowed',
+                          opacity: (!hasData || loading) ? 0.4 : 1,
+                          transition: 'all 0.15s ease',
+                        }}
+                        onMouseEnter={e => { if (!generating && hasData && !loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = '#1A1A1A'; }}
+                        onMouseLeave={e => { if (!generating && hasData && !loading) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+                      >
+                        {generating === `${rt.id}-print` ? <Loader2 size={13} style={{ animation: 'spin 1s linear infinite' }} /> : <FileDown size={13} />}
+                        Print
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Right panel: Live preview skeleton */}
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#555555', textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: 4 }}>
+            Report Preview
+          </div>
+          <PreviewSkeleton
+            selectedReport={selectedReportType}
+            selectedSections={new Set(selectedReportType ? reportTypes.find(r => r.id === selectedReportType)?.sections.map(() => 'all') || ['overview', 'ga4', 'gsc', 'insights'] : [])}
+          />
+        </div>
       </div>
 
       {/* Custom PDF Builder */}
       <CustomPDFBuilder workspace={workspace} days={dateRange.days || 30} periodLabel={periodLabel} hasData={hasData} />
 
-      <div style={{ marginTop: 20, padding: '14px 18px', borderRadius: 10, backgroundColor: c.bgCard, border: `1px solid ${c.border}`, fontSize: 12, color: c.textSecondary, lineHeight: 1.6 }}>
-        💡 <strong style={{ color: c.textSecondary }}>How to send to a client:</strong> Click "Open & Print PDF" → the report opens in a new tab → press Cmd/Ctrl+P → select "Save as PDF" → send the PDF. Or use the Custom PDF Builder below to generate a React PDF with selected sections.
+      <div style={{
+        marginTop: 20, padding: '14px 18px', borderRadius: 8,
+        backgroundColor: '#111111', border: '1px solid #222222',
+        fontSize: 12, color: '#888888', lineHeight: 1.6,
+      }}>
+        <strong style={{ color: '#FAFAFA' }}>How to send to a client:</strong> Click &quot;Generate &amp; Download&quot; to get a PDF file, or use &quot;Print&quot; to open in a new tab and save as PDF via Cmd/Ctrl+P. Use the Custom PDF Builder above to generate a React PDF with selected sections.
       </div>
     </PageShell>
   );
 }
-
-

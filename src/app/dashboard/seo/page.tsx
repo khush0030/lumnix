@@ -116,10 +116,13 @@ export default function SEOPage() {
       {!loading && !hasData && (
         <EmptyState
           icon={Search}
-          title="No GSC data yet"
-          description="Connect and sync Google Search Console in Settings to see keyword intelligence here."
-          actionLabel="Go to Settings"
-          onAction={() => router.push('/dashboard/settings')}
+          title={days <= 14 ? "No data for this date range" : "No GSC data yet"}
+          description={days <= 14
+            ? "No GSC data found for the selected period. Your data may not cover this range — try a longer period."
+            : "Connect and sync Google Search Console in Settings to see keyword intelligence here."
+          }
+          actionLabel={days <= 14 ? "Try Last 30 days" : "Go to Settings"}
+          onAction={() => days <= 14 ? setDays(30) : router.push('/dashboard/settings')}
         />
       )}
 

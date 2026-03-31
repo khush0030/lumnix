@@ -39,6 +39,27 @@ export async function GET(req: NextRequest) {
       .select('id, name, plan, logo_url, brand_color, slug, owner_id')
       .eq('owner_id', user.id);
 
+    // Auto-accept any pending invites for this user's email
+    const userEmail = user.email?.toLowerCase();
+    if (userEmail) {
+      const { data: pendingInvites } = await admin
+        .from('team_invites')
+        .select('id, workspace_id, role')
+        .eq('email', userEmail)
+        .eq('status', 'pending');
+
+      for (const invite of pendingInvites || []) {
+        // Add as workspace member
+        await admin.from('workspace_members').upsert({
+          workspace_id: invite.workspace_id, user_id: user.id, role: invite.role || 'member',
+        }, { onConflict: 'workspace_id,user_id' });
+        // Mark invite accepted
+        await admin.from('team_invites').update({
+          status: 'accepted', accepted_at: new Date().toISOString(),
+        }).eq('id', invite.id);
+      }
+    }
+
     // Build complete list of workspaces
     const wsMap = new Map<string, { workspace: any; role: string }>();
     for (const m of memberships || []) {

@@ -46,11 +46,18 @@ export default function MetaAdsPage() {
   const { integrations, loading: intLoading } = useIntegrations(workspace?.id);
   const { data: adsData, loading: dataLoading, refetch } = useMetaAdsData(workspace?.id);
   const [syncing, setSyncing] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
 
   const integration = integrations.find(i => i.provider === 'meta_ads');
   const isConnected = integration?.status === 'connected';
 
-  const campaigns = adsData?.campaigns || [];
+  const allCampaigns = adsData?.campaigns || [];
+  const campaigns = allCampaigns.filter((c: any) => {
+    if (statusFilter === 'all') return true;
+    const s = (c.status || '').toUpperCase();
+    if (statusFilter === 'active') return s === 'ACTIVE';
+    return s === 'PAUSED' || s === 'ARCHIVED';
+  });
   const totals = adsData?.totals;
 
   // Get currency from integration oauth_meta or from campaign data
@@ -119,7 +126,7 @@ export default function MetaAdsPage() {
     </PageShell>
   );
 
-  if (campaigns.length === 0) return (
+  if (allCampaigns.length === 0) return (
     <PageShell
       title="Meta Ads"
       description="Facebook & Instagram ad performance"
@@ -157,7 +164,24 @@ export default function MetaAdsPage() {
         <div style={{ padding: '18px 22px', borderBottom: `1px solid ${c.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
             <p style={{ fontSize: 11, fontWeight: 500, color: c.textSecondary, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Campaigns</p>
-            <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>{campaigns.length} campaigns</p>
+            <p style={{ fontSize: 12, color: c.textMuted, marginTop: 2 }}>{campaigns.length} of {allCampaigns.length} campaigns</p>
+          </div>
+          <div style={{ display: 'flex', gap: 6 }}>
+            {(['all', 'active', 'paused'] as const).map(f => {
+              const count = f === 'all' ? allCampaigns.length : allCampaigns.filter((c: any) => f === 'active' ? (c.status || '').toUpperCase() === 'ACTIVE' : (c.status || '').toUpperCase() !== 'ACTIVE').length;
+              const isActive = statusFilter === f;
+              return (
+                <button key={f} onClick={() => setStatusFilter(f)} style={{
+                  padding: '5px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  border: isActive ? `1px solid ${c.accent}` : `1px solid ${c.border}`,
+                  background: isActive ? c.accentSubtle : 'transparent',
+                  color: isActive ? c.accent : c.textSecondary,
+                  transition: 'all 0.15s',
+                }}>
+                  {f.charAt(0).toUpperCase() + f.slice(1)} ({count})
+                </button>
+              );
+            })}
           </div>
         </div>
         <div style={{ overflowX: 'auto' }}>

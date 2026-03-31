@@ -198,6 +198,29 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
   );
 }
 
+function AuthGuard({ children }: { children: React.ReactNode }) {
+  const [checked, setChecked] = useState(false);
+  const [authed, setAuthed] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    import('@/lib/supabase').then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+          router.replace('/auth/signin?redirect=' + encodeURIComponent(window.location.pathname));
+        } else {
+          setAuthed(true);
+        }
+        setChecked(true);
+      });
+    });
+  }, []);
+
+  if (!checked) return <div style={{ minHeight: '100vh' }} />;
+  if (!authed) return null;
+  return <>{children}</>;
+}
+
 function DashboardInner({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { c } = useTheme();
@@ -242,10 +265,12 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <WorkspaceProvider>
-      <ThemeProvider>
-        <DashboardInner>{children}</DashboardInner>
-      </ThemeProvider>
-    </WorkspaceProvider>
+    <ThemeProvider>
+      <AuthGuard>
+        <WorkspaceProvider>
+          <DashboardInner>{children}</DashboardInner>
+        </WorkspaceProvider>
+      </AuthGuard>
+    </ThemeProvider>
   );
 }

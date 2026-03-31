@@ -21,6 +21,12 @@ const LOGOS = [
   'Prism Agency', 'BlueShift', 'Catalyst Co', 'Zenith Labs',
 ];
 
+const SOCIAL_LINKS = {
+  twitter: 'https://x.com/oltaflockai',
+  linkedin: 'https://www.linkedin.com/company/oltaflock-ai',
+  email: 'mailto:khush@oltaflock.ai',
+};
+
 const FEATURES = [
   { icon: Brain, title: 'AI Anomaly Detection', desc: 'Auto-detects traffic drops, ranking changes, and CTR anomalies before your client calls angry. Daily scans, instant Slack alerts.' },
   { icon: Eye, title: 'Competitor Intelligence', desc: 'See exactly which keywords your competitors rank for, their estimated traffic, and domain authority shifts — updated weekly.' },
@@ -61,22 +67,22 @@ const TESTIMONIALS = [
 ];
 
 const METRICS = [
-  { value: '2,400+', label: 'Keywords tracked' },
-  { value: '180+', label: 'Reports generated monthly' },
+  { value: '500+', label: 'Waitlist signups' },
+  { value: '6→1', label: 'Tools replaced' },
   { value: '12 hrs', label: 'Saved per team per week' },
-  { value: '99.9%', label: 'Uptime' },
+  { value: '5', label: 'Data sources unified' },
 ];
 
 const PRICING = [
   {
     name: 'Starter', price: 29, desc: 'For solo marketers and freelancers',
     features: ['GSC + GA4 integration', '3 competitor tracking', 'Email alerts', 'PDF reports (5/mo)', '30-day data history', 'Community support'],
-    cta: 'Get started',
+    cta: 'Join waitlist',
   },
   {
     name: 'Growth', price: 79, desc: 'For growing teams that need an edge', badge: 'Most Popular', highlight: true,
     features: ['Everything in Starter', 'Google Ads + Meta Ads', 'Slack alerts', 'AI anomaly detection', '10 competitor tracking', 'Unlimited reports', '12-month data history', 'Priority support'],
-    cta: 'Start free trial',
+    cta: 'Join waitlist',
   },
   {
     name: 'Agency', price: 199, desc: 'For agencies managing multiple clients',
@@ -86,7 +92,7 @@ const PRICING = [
 ];
 
 const FAQS = [
-  { q: 'How does the free trial work?', a: 'You get 14 days of the Growth plan with full access to every feature — no credit card required. At the end of the trial you can pick a plan or your account pauses (no charge, no data loss).' },
+  { q: 'How does early access work?', a: 'Join the waitlist and we\'ll invite you in waves. Early access users get the Growth plan free for 30 days — no credit card required. You\'ll also get direct access to our team for feedback and feature requests.' },
   { q: 'Which data sources does Lumnix connect to?', a: 'Currently: Google Analytics 4, Google Search Console, Google Ads, and Meta Ads (Facebook & Instagram). We\'re adding LinkedIn Ads and TikTok Ads in Q3 2026.' },
   { q: 'Is my data secure?', a: 'Absolutely. All data is encrypted at rest and in transit. We use OAuth tokens (never passwords), and our infrastructure runs on SOC 2-compliant cloud providers. We never share or sell your data.' },
   { q: 'Can I cancel anytime?', a: 'Yes. No contracts, no cancellation fees. You can downgrade or cancel from your dashboard in two clicks. Your data is retained for 30 days after cancellation in case you change your mind.' },
@@ -247,7 +253,7 @@ function LandingInner() {
             }}
             onMouseEnter={e => { e.currentTarget.style.backgroundColor = c.accentHover; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.backgroundColor = c.accent; e.currentTarget.style.transform = 'translateY(0)'; }}
-          >Start free trial</button>
+          >Join waitlist</button>
         </div>
       </nav>
 
@@ -302,7 +308,7 @@ function LandingInner() {
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 32px rgba(99,102,241,0.4)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(99,102,241,0.3)'; }}
           >
-            Start free trial — no card required <ArrowRight size={18} />
+            Join the waitlist <ArrowRight size={18} />
           </button>
           <button
             onClick={() => scrollTo('features')}
@@ -319,7 +325,7 @@ function LandingInner() {
             <Play size={16} /> Watch demo
           </button>
         </div>
-        <p style={{ fontSize: 13, color: c.textMuted }}>14-day free trial &middot; No credit card &middot; Cancel anytime</p>
+        <p style={{ fontSize: 13, color: c.textMuted }}>Free early access &middot; No credit card &middot; Be first in line</p>
 
         {/* ─── Hero Dashboard Mockup ─── */}
         <div style={{
@@ -413,7 +419,7 @@ function LandingInner() {
       {/* ──────────────────────── LOGO BAR ──────────────────────── */}
       <section style={{ padding: '80px 24px 60px', position: 'relative', zIndex: 1 }}>
         <p style={{ textAlign: 'center', fontSize: 13, color: c.textMuted, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 600, marginBottom: 32 }}>
-          Trusted by marketing teams at
+          Backed by early-access teams from
         </p>
         <div style={{
           display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 48,
@@ -744,10 +750,10 @@ function LandingInner() {
               <span style={{ fontSize: 12, fontWeight: 600, color: c.accent }}>Testimonials</span>
             </div>
             <h2 style={{ fontSize: 44, fontWeight: 800, letterSpacing: '-2px', marginBottom: 18, color: c.text }}>
-              Loved by marketing teams
+              What our beta testers say
             </h2>
             <p style={{ fontSize: 17, color: c.textMuted, maxWidth: 500, margin: '0 auto' }}>
-              Don&apos;t take our word for it. Here&apos;s what our customers have to say.
+              Early feedback from teams testing Lumnix before launch.
             </p>
           </div>
 
@@ -996,8 +1002,8 @@ function LandingInner() {
             fontSize: 18, color: c.textSecondary, maxWidth: 520, margin: '0 auto 40px',
             lineHeight: 1.7, position: 'relative',
           }}>
-            Join hundreds of marketing teams who replaced 6 tools with one
-            intelligent platform. Your first 14 days are free.
+            Join the waitlist and be first to experience the future of
+            marketing intelligence. Early access spots are limited.
           </p>
           <button
             onClick={() => router.push('/auth/signup')}
@@ -1012,10 +1018,10 @@ function LandingInner() {
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 8px 40px rgba(99,102,241,0.45)'; }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 24px rgba(99,102,241,0.3)'; }}
           >
-            Start your free trial <ArrowRight size={20} />
+            Join the waitlist <ArrowRight size={20} />
           </button>
           <p style={{ fontSize: 13, color: c.textMuted, marginTop: 16, position: 'relative' }}>
-            No credit card required &middot; Setup in 2 minutes &middot; Cancel anytime
+            No credit card required &middot; Free early access &middot; Limited spots
           </p>
         </div>
       </section>
@@ -1037,8 +1043,8 @@ function LandingInner() {
                 AI-powered marketing intelligence. One dashboard to replace them all.
               </p>
               <div style={{ display: 'flex', gap: 12 }}>
-                {[Twitter, Linkedin, Mail].map((Icon, i) => (
-                  <a key={i} href="#" style={{
+                {[{ Icon: Twitter, href: SOCIAL_LINKS.twitter }, { Icon: Linkedin, href: SOCIAL_LINKS.linkedin }, { Icon: Mail, href: SOCIAL_LINKS.email }].map(({ Icon, href }, i) => (
+                  <a key={i} href={href} target={href.startsWith('mailto') ? undefined : '_blank'} rel="noopener noreferrer" style={{
                     width: 36, height: 36, borderRadius: 8, backgroundColor: c.bgCardHover,
                     border: `1px solid ${c.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center',
                     transition: 'border-color 0.2s', textDecoration: 'none',
@@ -1057,7 +1063,7 @@ function LandingInner() {
               <div key={category} style={{ flex: '0 0 140px' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: c.text, marginBottom: 16, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{category}</div>
                 {links.map(link => (
-                  <a key={link} href="#" style={{
+                  <a key={link} href={link === 'Privacy' ? '/privacy' : '#'} style={{
                     display: 'block', fontSize: 14, color: c.textMuted, textDecoration: 'none',
                     padding: '5px 0', transition: 'color 0.2s',
                   }}

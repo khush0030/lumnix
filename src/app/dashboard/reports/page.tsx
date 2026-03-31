@@ -1011,9 +1011,7 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
         </div>
       </div>
 
-      {/* Split layout: left config + right preview */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        {/* Left: Section checkboxes */}
+      <div>
         <div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 8, marginBottom: 18 }}>
             {pdfSections.map(s => (
@@ -1065,9 +1063,6 @@ function CustomPDFBuilder({ workspace, days, periodLabel, hasData }: { workspace
             {generating ? 'Generating PDF...' : `Generate & Download (${selected.size} section${selected.size !== 1 ? 's' : ''})`}
           </button>
         </div>
-
-        {/* Right: Live preview skeleton */}
-        <PreviewSkeleton selectedReport="full" selectedSections={selected} />
       </div>
     </div>
   );
@@ -1288,9 +1283,8 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* ── Main split layout: Report cards (left) + Preview (right) ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginBottom: 24 }}>
-        {/* Left panel: Report type cards */}
+      {/* ── Report Type Cards ── */}
+      <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: 4 }}>
             Choose Report Type
@@ -1410,15 +1404,6 @@ export default function ReportsPage() {
           })}
         </div>
 
-        {/* Right panel: Live preview skeleton */}
-        <div>
-          <div style={{ fontSize: 11, fontWeight: 700, color: c.textMuted, textTransform: 'uppercase' as const, letterSpacing: '1px', marginBottom: 4 }}>
-            Report Preview
-          </div>
-          <PreviewSkeleton
-            selectedReport={selectedReportType}
-            selectedSections={new Set(selectedReportType ? reportTypes.find(r => r.id === selectedReportType)?.sections.map(() => 'all') || ['overview', 'ga4', 'gsc', 'insights'] : [])}
-          />
         </div>
       </div>
 

@@ -948,7 +948,9 @@ function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
     <div style={{ marginTop: 32 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
         <div style={{ width: 48, height: 48, borderRadius: 12, backgroundColor: 'rgba(74,21,75,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <img src="https://cdn.simpleicons.org/slack/4A154B" width={26} height={26} alt="Slack" />
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z" fill="#4A154B"/>
+          </svg>
         </div>
         <div>
           <div style={{ fontSize: 15, fontWeight: 700, color: c.text }}>Slack Notifications</div>
@@ -968,9 +970,15 @@ function SlackSection({ workspaceId }: { workspaceId: string | undefined }) {
             onFocus={e => (e.target as HTMLInputElement).style.borderColor = c.accent}
             onBlur={e => (e.target as HTMLInputElement).style.borderColor = c.border}
           />
-          <p style={{ fontSize: 12, color: c.textMuted, marginTop: 6, lineHeight: 1.5 }}>
-            Get this from your Slack app settings &rarr; Incoming Webhooks. Alerts and anomaly notifications will be sent to this channel.
-          </p>
+          <div style={{ marginTop: 8, padding: '12px 14px', borderRadius: 8, backgroundColor: `${c.accent}08`, border: `1px solid ${c.accent}20` }}>
+            <p style={{ fontSize: 12, color: c.textSecondary, lineHeight: 1.6, margin: 0 }}>
+              <strong style={{ color: c.text, display: 'block', marginBottom: 6 }}>How to get your Slack webhook URL:</strong>
+              1. Go to <a href="https://api.slack.com/apps" target="_blank" rel="noopener" style={{ color: c.accent, textDecoration: 'underline' }}>api.slack.com/apps</a> → Create New App → From scratch<br/>
+              2. Name it "Lumnix Alerts" → pick your workspace → Create App<br/>
+              3. In Features → Incoming Webhooks → toggle Activate → Add New Webhook to Workspace<br/>
+              4. Pick the channel for alerts → Allow → copy the Webhook URL and paste it above
+            </p>
+          </div>
         </div>
 
         {error && (
@@ -1402,17 +1410,17 @@ export default function SettingsPage() {
                             } catch {}
                           }}
                           style={{
-                            padding: '10px 14px', borderRadius: 8, fontSize: 12, fontWeight: 600,
+                            padding: '10px 16px', borderRadius: 8, fontSize: 13, fontWeight: 600,
                             cursor: 'pointer', backgroundColor: 'transparent',
-                            color: c.danger, border: `1px solid ${c.danger}40`,
-                            display: 'flex', alignItems: 'center', gap: 4,
+                            color: c.danger, border: `1px solid ${c.danger}60`,
+                            display: 'flex', alignItems: 'center', gap: 6,
                             transition: 'all 0.15s',
                           }}
                           onMouseEnter={e => { e.currentTarget.style.backgroundColor = c.dangerSubtle; }}
                           onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                          title={`Disconnect ${p.name}`}
                         >
                           <X size={13} />
+                          Disconnect
                         </button>
                       </>
                     )}

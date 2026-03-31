@@ -52,6 +52,18 @@ export default function DashboardPage() {
   const { data: gscResp, loading: gscLoading } = useGSCData(workspace?.id, 'keywords', 30);
   const { data: gscOverviewResp } = useGSCData(workspace?.id, 'overview', 30);
 
+  // Get user's first name for greeting
+  const [userName, setUserName] = useState('');
+  useEffect(() => {
+    import('@/lib/supabase').then(({ supabase }) => {
+      supabase.auth.getUser().then(({ data }) => {
+        const meta = data?.user?.user_metadata;
+        const name = meta?.full_name || meta?.name || data?.user?.email?.split('@')[0] || '';
+        setUserName(name.split(' ')[0]);
+      });
+    });
+  }, []);
+
   const loading = wsLoading || ga4Loading || gscLoading;
 
   const ga4Data: any[] = ga4Resp?.data || [];
@@ -83,7 +95,7 @@ export default function DashboardPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 600, color: c.text, letterSpacing: '-0.02em', lineHeight: 1.3 }}>
-            Dashboard
+            {userName ? `Welcome back, ${userName}` : 'Dashboard'}
           </h1>
           <p style={{ color: c.textMuted, fontSize: 13, marginTop: 4 }}>
             {connectedProviders.length > 0

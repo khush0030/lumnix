@@ -123,6 +123,41 @@ p { font-size: 15px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
   }
 }
 
+// DELETE /api/team/invite?invite_id=<id> — revoke a pending invite
+export async function DELETE(req: NextRequest) {
+  try {
+    const authHeader = req.headers.get('authorization');
+    if (!authHeader) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const supabase = getUserClient(authHeader);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
+    const inviteId = req.nextUrl.searchParams.get('invite_id');
+    const workspaceId = req.nextUrl.searchParams.get('workspace_id');
+    if (!inviteId || !workspaceId) return NextResponse.json({ error: 'Missing invite_id or workspace_id' }, { status: 400 });
+
+    const db = getSupabaseAdmin();
+
+    // Verify requester owns this workspace
+    const { data: workspace } = await db.from('workspaces').select('id, owner_id').eq('id', workspaceId).single();
+    if (!workspace || workspace.owner_id !== user.id) {
+      return NextResponse.json({ error: 'Not authorized for this workspace' }, { status: 403 });
+    }
+
+    // Only allow revoking pending invites
+    const { data: invite } = await db.from('team_invites').select('id, status').eq('id', inviteId).eq('workspace_id', workspaceId).single();
+    if (!invite) return NextResponse.json({ error: 'Invite not found' }, { status: 404 });
+    if (invite.status !== 'pending') return NextResponse.json({ error: 'Can only revoke pending invites' }, { status: 400 });
+
+    await db.from('team_invites').delete().eq('id', inviteId);
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+
 // GET /api/team/invite — list current members + invites
 export async function GET(req: NextRequest) {
   try {

@@ -965,6 +965,7 @@ export default function SettingsPage() {
   const [inviteMsg, setInviteMsg] = useState<{ text: string; ok: boolean; inviteUrl?: string } | null>(null);
   const [copied, setCopied] = useState(false);
   const [teamData, setTeamData] = useState<{ members: any[]; invites: any[]; canInviteMore: boolean; slotsUsed: number; maxSlots: number } | null>(null);
+  const [revokingId, setRevokingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (workspace?.id && activeTab === "team") {
@@ -1007,6 +1008,27 @@ export default function SettingsPage() {
       setInviteMsg({ text: data.error, ok: false });
     }
     setInviting(false);
+  }
+
+  async function handleRevokeInvite(inviteId: string) {
+    if (!workspace?.id) return;
+    setRevokingId(inviteId);
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { setRevokingId(null); return; }
+    const res = await fetch(`/api/team/invite?invite_id=${inviteId}&workspace_id=${workspace.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const data = await res.json();
+    if (data.success) {
+      setTeamData(prev => prev ? {
+        ...prev,
+        slotsUsed: Math.max(0, prev.slotsUsed - 1),
+        canInviteMore: Math.max(0, prev.slotsUsed - 1) < prev.maxSlots,
+        invites: prev.invites.filter((inv: any) => inv.id !== inviteId),
+      } : prev);
+    }
+    setRevokingId(null);
   }
 
   useEffect(() => {
@@ -1425,19 +1447,40 @@ export default function SettingsPage() {
                           </div>
                         </div>
                       </div>
-                      {invUrl && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {invUrl && (
+                          <button
+                            type="button"
+                            onClick={() => { navigator.clipboard.writeText(invUrl); }}
+                            style={{
+                              ...ghostBtnStyle,
+                              padding: '6px 12px', fontSize: 12,
+                            }}
+                          >
+                            <Link size={12} />
+                            Copy link
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => { navigator.clipboard.writeText(invUrl); }}
+                          onClick={() => handleRevokeInvite(inv.id)}
+                          disabled={revokingId === inv.id}
+                          title="Revoke invite"
                           style={{
-                            ...ghostBtnStyle,
+                            ...destructiveBtnStyle,
+                            display: 'flex', alignItems: 'center', gap: 6,
                             padding: '6px 12px', fontSize: 12,
+                            opacity: revokingId === inv.id ? 0.6 : 1,
+                            cursor: revokingId === inv.id ? 'wait' : 'pointer',
                           }}
                         >
-                          <Link size={12} />
-                          Copy link
+                          {revokingId === inv.id
+                            ? <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} />
+                            : <Trash2 size={12} />
+                          }
+                          {revokingId === inv.id ? 'Revoking...' : 'Revoke'}
                         </button>
-                      )}
+                      </div>
                     </div>
                   );
                 })}

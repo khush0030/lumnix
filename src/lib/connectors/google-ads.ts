@@ -6,7 +6,6 @@ async function safeParse(res: Response): Promise<any> {
   try {
     return JSON.parse(text);
   } catch {
-    // API returned HTML or non-JSON (e.g. error page)
     throw new Error(`Google Ads API returned non-JSON response (status ${res.status}): ${text.substring(0, 200)}`);
   }
 }
@@ -17,6 +16,9 @@ export async function fetchGoogleAdsCampaigns(
 ) {
   const devToken = process.env.GOOGLE_ADS_DEVELOPER_TOKEN || '';
   if (!devToken) throw new Error('Google Ads developer token not configured');
+
+  // Strip dashes from customer ID
+  const cleanId = customerId.replace(/-/g, '');
 
   const query = `
     SELECT
@@ -36,17 +38,19 @@ export async function fetchGoogleAdsCampaigns(
     LIMIT 50
   `;
 
-  // Use search (not searchStream) for simpler JSON response
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${accessToken}`,
+    'Content-Type': 'application/json',
+    'developer-token': devToken,
+  };
+
+  // Don't set login-customer-id for direct accounts — only needed for MCC
+
   const res = await fetch(
-    `https://googleads.googleapis.com/v23/customers/${customerId}/googleAds:search`,
+    `https://googleads.googleapis.com/v23/customers/${cleanId}/googleAds:search`,
     {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'developer-token': devToken,
-        'login-customer-id': customerId,
-      },
+      headers,
       body: JSON.stringify({ query, pageSize: 50 }),
     }
   );
@@ -54,8 +58,17 @@ export async function fetchGoogleAdsCampaigns(
   const data = await safeParse(res);
 
   if (!res.ok) {
-    const errMsg = data?.error?.message || data?.error?.details?.[0]?.errors?.[0]?.message || JSON.stringify(data).substring(0, 200);
-    throw new Error(`Google Ads API error: ${errMsg}`);
+    // Extract the most useful error message
+    const details = data?.error?.details;
+    let errMsg = data?.error?.message || '';
+    if (details?.length) {
+      for (const d of details) {
+        if (d.errors?.length) {
+          errMsg = d.errors[0].message || errMsg;
+        }
+      }
+    }
+    throw new Error(`Google Ads API error: ${errMsg || JSON.stringify(data).substring(0, 300)}`);
   }
 
   const campaigns: any[] = [];
@@ -98,5 +111,5 @@ export async function fetchGoogleAdsAccounts(accessToken: string): Promise<strin
     throw new Error(errMsg);
   }
 
-  return (data.resourceNames || []).map((r: string) => r.replace('customers/', ''));
+  return (data.resourceNames || []).map((r: string) => r.replace('customers/', '').replace(/-/g, ''));
 }

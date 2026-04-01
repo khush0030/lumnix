@@ -132,7 +132,8 @@ function SidebarInner({ onClose }: { onClose?: () => void }) {
   return (
     <div style={{ width: 240, minHeight: '100vh', backgroundColor: c.bgPage, display: 'flex', flexDirection: 'column', padding: '20px 12px', flexShrink: 0, boxShadow: `1px 0 0 ${c.bgCardHover}` }}>
       {/* Logo */}
-      <div style={{ padding: '2px 10px 18px' }}>
+      <div style={{ padding: '2px 10px 18px', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <img src="/favicon.png" alt="Lumnix" style={{ width: 22, height: 22, borderRadius: 5, objectFit: 'contain' }} />
         <span style={{ fontSize: 16, fontWeight: 700, letterSpacing: '-0.03em', color: c.text }}>
           <span style={{ color: c.accent }}>L</span>umnix
         </span>
@@ -261,9 +262,12 @@ function DashboardInner({ children }: { children: React.ReactNode }) {
       {/* Mobile header */}
       <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 40, backgroundColor: c.bgPage, borderBottom: `1px solid ${c.border}`, padding: '12px 16px', display: 'none' }} className="mobile-header">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 16, fontWeight: 700, color: c.text }}>
-            <span style={{ color: c.accent }}>L</span>umnix
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src="/favicon.png" alt="Lumnix" style={{ width: 22, height: 22, borderRadius: 5, objectFit: 'contain' }} />
+            <span style={{ fontSize: 16, fontWeight: 700, color: c.text }}>
+              <span style={{ color: c.accent }}>L</span>umnix
+            </span>
+          </div>
           <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ background: 'none', border: 'none', color: c.textSecondary, cursor: 'pointer' }}>
             {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
           </button>

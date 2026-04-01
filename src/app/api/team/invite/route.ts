@@ -184,6 +184,22 @@ export async function GET(req: NextRequest) {
       db.from('team_invites').select('id, email, role, token, status, expires_at, created_at').eq('workspace_id', workspaceId).order('created_at', { ascending: false }),
     ]);
 
+    // Enrich members with user details (name + email) from Supabase auth
+    const { data: { users: allUsers } } = await db.auth.admin.listUsers();
+    const userMap = new Map<string, { name: string; email: string }>();
+    for (const u of allUsers || []) {
+      userMap.set(u.id, {
+        name: u.user_metadata?.full_name || u.user_metadata?.name || u.email?.split('@')[0] || 'Unknown',
+        email: u.email || '',
+      });
+    }
+
+    const enrichedMembers = (membersRes.data || []).map((m: any) => ({
+      ...m,
+      name: userMap.get(m.user_id)?.name || 'Unknown',
+      email: userMap.get(m.user_id)?.email || '',
+    }));
+
     // Get workspace plan for member limits
     const { data: ws } = await db.from('workspaces').select('plan').eq('id', workspaceId).single();
     const maxSlots = PLAN_MEMBER_LIMITS[ws?.plan || 'free'] || PLAN_MEMBER_LIMITS.free;
@@ -194,7 +210,7 @@ export async function GET(req: NextRequest) {
     const slotsUsed = joinedNonOwner + pendingInvites.length;
 
     return NextResponse.json({
-      members: membersRes.data || [],
+      members: enrichedMembers,
       invites: invitesRes.data || [],
       canInviteMore: slotsUsed < maxSlots,
       slotsUsed,

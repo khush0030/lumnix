@@ -1061,12 +1061,14 @@ function DeleteAccountSection() {
   }
 
   return (
-    <div style={{ ...card, marginTop: 32, borderColor: c.danger, borderWidth: 1 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-        <AlertTriangle size={18} color={c.danger} />
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: c.danger }}>Danger Zone</h3>
+    <div style={{ ...card, marginTop: 40, border: `1px solid rgba(239,68,68,0.3)`, borderRadius: 12, padding: '24px 28px', backgroundColor: 'rgba(239,68,68,0.04)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+        <div style={{ width: 32, height: 32, borderRadius: 8, backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <AlertTriangle size={16} color="#ef4444" />
+        </div>
+        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#ef4444' }}>Danger Zone</h3>
       </div>
-      <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 16 }}>
+      <p style={{ fontSize: 13, color: c.textSecondary, lineHeight: 1.6, marginBottom: 20 }}>
         Permanently delete your account and all associated data. This action cannot be undone.
       </p>
 
@@ -1578,15 +1580,15 @@ export default function SettingsPage() {
                           width: 34, height: 34, borderRadius: '50%',
                           backgroundColor: c.accentSubtle,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 13, fontWeight: 700, color: c.accent,
+                          fontSize: 13, fontWeight: 700, color: c.accent, textTransform: 'uppercase',
                         }}>
-                          {(m.user_id || '?').substring(0, 2).toUpperCase()}
+                          {(m.name || m.email || '?').substring(0, 2)}
                         </div>
                         <div>
-                          <div style={{ fontSize: 14, fontWeight: 500, color: c.text }}>
-                            {m.user_id === workspace?.owner_id || m.user_id === workspace?.created_by ? 'You (Owner)' : 'Member'}
+                          <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>
+                            {m.name || 'Unknown'}{m.role === 'owner' ? ' (You)' : ''}
                           </div>
-                          <div style={{ fontSize: 11, color: c.textMuted }}>Joined {new Date(m.created_at).toLocaleDateString()}</div>
+                          <div style={{ fontSize: 12, color: c.textMuted }}>{m.email}</div>
                         </div>
                       </div>
                       <span style={{

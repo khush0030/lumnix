@@ -66,6 +66,9 @@ export default function AnalyticsPage() {
   const pagesData: any[] = pagesResp?.data || [];
 
   const hasData = overviewData.length > 0;
+  // Check if we ever had data (to distinguish "never synced" from "no data for this range")
+  const { data: anyDataCheck } = useGA4Data(workspaceId, 'overview', 90);
+  const hasSyncedBefore = (anyDataCheck?.data?.length || 0) > 0;
 
   // KPI totals
   const totalSessions = overviewData.reduce((s: number, r: any) => s + (r.sessions || 0), 0);
@@ -111,11 +114,18 @@ export default function AnalyticsPage() {
         </>
       )}
 
-      {!loading && !hasData && (
+      {!loading && !hasData && hasSyncedBefore && (
+        <div style={{ textAlign: 'center', padding: '40px 20px', borderRadius: 12, border: `1px dashed ${c.border}`, backgroundColor: c.bgCard }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>No data for the last {days} days</p>
+          <p style={{ fontSize: 13, color: c.textMuted }}>Try a longer date range or sync to pull the latest data.</p>
+        </div>
+      )}
+
+      {!loading && !hasData && !hasSyncedBefore && (
         <EmptyState
           icon={BarChart3}
           title="No GA4 data found"
-          description={`No analytics data for the last ${days} days. Hit Sync Now to pull fresh data from Google Analytics.`}
+          description="Your Google Analytics account is connected. Click Sync Now to pull your analytics data."
           actionLabel={syncing ? "Syncing..." : "Sync Now"}
           onAction={() => {
             if (!workspaceId) { router.push('/dashboard/settings'); return; }

@@ -47,6 +47,8 @@ export default function SEOPage() {
   const overviewData: any[] = overviewResp?.overview || [];
 
   const hasData = allKeywords.length > 0;
+  const { data: anyDataCheck } = useGSCData(workspaceId, 'keywords', 90);
+  const hasSyncedBefore = (anyDataCheck?.keywords?.length || 0) > 0;
 
   const avgCTRValue = allKeywords.length > 0
     ? allKeywords.reduce((s, k) => s + k.ctr, 0) / allKeywords.length : 0;
@@ -114,11 +116,18 @@ export default function SEOPage() {
         </>
       )}
 
-      {!loading && !hasData && (
+      {!loading && !hasData && hasSyncedBefore && (
+        <div style={{ textAlign: 'center', padding: '40px 20px', borderRadius: 12, border: `1px dashed ${c.border}`, backgroundColor: c.bgCard }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: c.text, marginBottom: 4 }}>No data for the last {days} days</p>
+          <p style={{ fontSize: 13, color: c.textMuted }}>Try a longer date range or sync to pull the latest data.</p>
+        </div>
+      )}
+
+      {!loading && !hasData && !hasSyncedBefore && (
         <EmptyState
           icon={Search}
           title="No GSC data found"
-          description={`No search data for the last ${days} days. Hit Sync Now to pull fresh data from Google Search Console.`}
+          description="Your Search Console is connected. Click Sync Now to pull your keyword and search data."
           actionLabel={syncing ? "Syncing..." : "Sync Now"}
           onAction={() => {
             if (!workspaceId) { router.push('/dashboard/settings'); return; }

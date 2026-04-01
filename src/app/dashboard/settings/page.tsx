@@ -1562,6 +1562,7 @@ export default function SettingsPage() {
               <h3 style={{ fontSize: 15, fontWeight: 700, color: c.text, marginBottom: 16 }}>Team Members</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {teamData.members.map((m: any) => {
+                  const isOwner = m.role === 'owner';
                   const roleColors: Record<string, { bg: string; color: string }> = {
                     owner: { bg: c.warningSubtle, color: c.warning },
                     admin: { bg: c.accentSubtle, color: c.accent },
@@ -1586,17 +1587,73 @@ export default function SettingsPage() {
                         </div>
                         <div>
                           <div style={{ fontSize: 14, fontWeight: 600, color: c.text }}>
-                            {m.name || 'Unknown'}{m.role === 'owner' ? ' (You)' : ''}
+                            {m.name || 'Unknown'}{isOwner ? ' (You)' : ''}
                           </div>
                           <div style={{ fontSize: 12, color: c.textMuted }}>{m.email}</div>
                         </div>
                       </div>
-                      <span style={{
-                        fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
-                        backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
-                      }}>
-                        {m.role}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {isOwner ? (
+                          <span style={{
+                            fontSize: 11, fontWeight: 600, padding: '4px 10px', borderRadius: 6,
+                            backgroundColor: rc.bg, color: rc.color, textTransform: 'capitalize',
+                          }}>
+                            Owner
+                          </span>
+                        ) : (
+                          <>
+                            <select
+                              value={m.role}
+                              onChange={async (e) => {
+                                const newRole = e.target.value;
+                                const session = (await supabase.auth.getSession()).data.session;
+                                if (!session) return;
+                                try {
+                                  const res = await fetch('/api/team/member', {
+                                    method: 'PATCH',
+                                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+                                    body: JSON.stringify({ workspace_id: workspace.id, member_id: m.id, role: newRole }),
+                                  });
+                                  if (res.ok) refreshTeamData();
+                                } catch {}
+                              }}
+                              style={{
+                                fontSize: 12, fontWeight: 600, padding: '5px 8px', borderRadius: 6,
+                                backgroundColor: rc.bg, color: rc.color, border: `1px solid ${rc.color}30`,
+                                cursor: 'pointer', outline: 'none', appearance: 'auto',
+                              }}
+                            >
+                              <option value="admin">Admin</option>
+                              <option value="member">Member</option>
+                              <option value="viewer">Viewer</option>
+                            </select>
+                            <button
+                              onClick={async () => {
+                                if (!confirm(`Remove ${m.name || m.email} from this workspace?`)) return;
+                                const session = (await supabase.auth.getSession()).data.session;
+                                if (!session) return;
+                                try {
+                                  const res = await fetch(`/api/team/member?member_id=${m.id}&workspace_id=${workspace.id}`, {
+                                    method: 'DELETE',
+                                    headers: { Authorization: `Bearer ${session.access_token}` },
+                                  });
+                                  if (res.ok) refreshTeamData();
+                                } catch {}
+                              }}
+                              style={{
+                                padding: '5px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+                                cursor: 'pointer', backgroundColor: 'transparent',
+                                color: c.danger, border: `1px solid ${c.danger}40`,
+                                display: 'flex', alignItems: 'center', gap: 4,
+                              }}
+                              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.08)'; }}
+                              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'transparent'; }}
+                            >
+                              Remove
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

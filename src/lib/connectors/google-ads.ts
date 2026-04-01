@@ -51,7 +51,7 @@ export async function fetchGoogleAdsCampaigns(
     {
       method: 'POST',
       headers,
-      body: JSON.stringify({ query, pageSize: 50 }),
+      body: JSON.stringify({ query }),
     }
   );
 
